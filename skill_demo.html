@@ -1,0 +1,2779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>综述自审溯源 · 技能演示</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          accent: '#22d3ee', /* cyan-400 */
+        },
+        fontFamily: {
+          mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+          sans: ['-apple-system', 'BlinkMacSystemFont', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', '"Noto Sans SC"', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .flow-arrow, .placeholder-box, .animate-ping { animation: none !important; }
+  }
+  body {
+    background-color: #0f172a; /* slate-900 */
+    color: #f1f5f9; /* slate-100 */
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  }
+  ::selection { background: rgba(34, 211, 238, .25); }
+
+  /* 背景网格纹理 */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(148, 163, 184, .06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, .06) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  /* 导航链接下划线动效 */
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 100%; bottom: -4px;
+    height: 1px;
+    background: #22d3ee;
+    transition: right .25s ease;
+  }
+  .nav-link:hover::after, .nav-link.active::after { right: 0; }
+  .nav-link.active { color: #22d3ee; }
+
+  /* 流程卡片 hover 微光 */
+  .flow-card { transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+  .flow-card:hover {
+    border-color: rgba(34, 211, 238, .5);
+    transform: translateY(-3px);
+    box-shadow: 0 0 24px rgba(34, 211, 238, .12);
+  }
+
+  /* 连接线呼吸 */
+  @keyframes pulse-line { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  .flow-arrow { animation: pulse-line 2.4s ease-in-out infinite; }
+
+  /* 空区块占位虚线呼吸 */
+  @keyframes pulse-dash { 0%,100% { border-color: rgba(71, 85, 105, .5); } 50% { border-color: rgba(34, 211, 238, .35); } }
+  .placeholder-box { animation: pulse-dash 3.2s ease-in-out infinite; }
+
+  /* ===== P2 综述阅读器 ===== */
+  .chapter-link.chapter-active { border-color: rgba(34,211,238,.35); background: rgba(34,211,238,.06); }
+  .chapter-link.chapter-active span:first-child { color: #22d3ee; }
+  .cite { color: inherit; text-decoration: underline; text-decoration-color: rgba(34,211,238,.55); text-underline-offset: 4px; text-decoration-thickness: 1px; }
+  .cite:hover { color: #22d3ee; background: rgba(34,211,238,.08); text-decoration-color: #22d3ee; }
+  #source-overlay.open { opacity: 1; pointer-events: auto; }
+  #source-panel.open { transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    #source-overlay, #source-panel { transition: none !important; }
+  }
+</style>
+</head>
+<body class="antialiased bg-grid">
+
+<!-- ══════════ 顶部固定导航栏 ══════════ -->
+<header class="fixed top-0 inset-x-0 z-50 border-b border-slate-800/80 bg-slate-900/85 backdrop-blur-md">
+  <nav class="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+    <!-- 品牌标识 -->
+    <a href="#top" class="flex shrink-0 items-center gap-2.5">
+      <span class="relative flex h-2.5 w-2.5">
+        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60"></span>
+        <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-cyan-400"></span>
+      </span>
+      <span class="font-mono text-sm tracking-wider text-slate-100">综述自审<span class="text-cyan-400">溯源</span></span>
+    </a>
+
+    <!-- 6 个区块链接：移动端横向滑动，桌面端均分 -->
+    <div class="ml-auto flex items-center gap-1 overflow-x-auto font-mono text-[13px] text-slate-400 sm:gap-2">
+      <a href="#sec-overview"  data-spy="sec-overview"  class="nav-link whitespace-nowrap px-2.5 py-1.5 transition-colors hover:text-slate-100">概览</a>
+      <a href="#sec-materials" data-spy="sec-materials" class="nav-link whitespace-nowrap px-2.5 py-1.5 transition-colors hover:text-slate-100">材料</a>
+      <a href="#sec-review"    data-spy="sec-review"    class="nav-link whitespace-nowrap px-2.5 py-1.5 transition-colors hover:text-slate-100">综述</a>
+      <a href="#sec-audit"     data-spy="sec-audit"     class="nav-link whitespace-nowrap px-2.5 py-1.5 transition-colors hover:text-slate-100">审计</a>
+      <a href="#sec-process"   data-spy="sec-process"   class="nav-link whitespace-nowrap px-2.5 py-1.5 transition-colors hover:text-slate-100">过程</a>
+      <a href="#sec-data"      data-spy="sec-data"      class="nav-link whitespace-nowrap px-2.5 py-1.5 transition-colors hover:text-slate-100">数据</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ══════════ Hero 区 ══════════ -->
+<section id="top" class="relative flex min-h-[92vh] items-center overflow-hidden">
+  <canvas id="hero-canvas" class="absolute inset-0 h-full w-full"></canvas>
+  <!-- 底部渐隐，衔接正文 -->
+  <div class="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-900 to-transparent"></div>
+
+  <div class="relative mx-auto w-full max-w-6xl px-4 pb-24 pt-28 sm:px-6">
+    <p class="mb-5 font-mono text-xs tracking-[0.35em] text-cyan-400/90">self-auditing-review · SKILL DEMO</p>
+    <h1 class="text-4xl font-bold leading-tight tracking-tight text-slate-100 sm:text-6xl lg:text-7xl">
+      综述<span class="text-cyan-400">自审</span>溯源
+    </h1>
+    <p class="mt-6 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-lg">
+      多源材料 <span class="mx-1 text-cyan-400">→</span> 带来源标注的综述 <span class="mx-1 text-cyan-400">→</span> 事实一致性自审闭环。本页为离线成果展示，不后台运行 Python、不实时上传计算
+    </p>
+
+    <!-- 锚点提示 -->
+    <div class="mt-12 flex flex-wrap items-center gap-3 font-mono text-xs text-slate-500">
+      <span class="rounded border border-slate-700/80 bg-slate-800/60 px-2.5 py-1">6 个演示区块</span>
+      <span class="rounded border border-slate-700/80 bg-slate-800/60 px-2.5 py-1">5 步闭环流程</span>
+      <span class="rounded border border-slate-700/80 bg-slate-800/60 px-2.5 py-1">来源标注 · 事实自审</span>
+      <span class="rounded border border-slate-700/80 bg-slate-800/60 px-2.5 py-1">静态成果展示 · 无后端</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 6 个内容区块 ══════════ -->
+<main class="mx-auto max-w-6xl px-4 sm:px-6">
+
+  <section id="sec-overview" class="scroll-mt-20 border-b border-slate-800/60 py-20">
+    <p class="mb-3 font-mono text-xs tracking-[0.3em] text-cyan-400/90">SECTION 01</p>
+    <h2 class="text-2xl font-bold text-slate-100 sm:text-3xl">概览</h2>
+    <!-- 1. 技能定位卡 -->
+    <div class="mt-10 rounded-lg border border-cyan-400/25 bg-gradient-to-br from-cyan-400/10 via-slate-800/50 to-slate-800/50 p-6 sm:p-8">
+      <p class="font-mono text-[11px] tracking-[0.25em] text-cyan-400/80">技能定位 · POSITIONING</p>
+      <p class="mt-4 text-lg leading-relaxed text-slate-100 sm:text-xl">
+        从多源材料生成带来源标注的科研综述，内置事实一致性自审闭环
+      </p>
+      <p class="mt-3 font-mono text-xs leading-relaxed text-slate-500">
+        self-auditing-review · multi-source materials → cited review → self-audit loop
+      </p>
+    </div>
+
+    <!-- 2. 五段闭环说明 -->
+    <p class="mt-14 mb-4 font-mono text-[11px] tracking-[0.25em] text-slate-600">五段闭环 · PIPELINE</p>
+    <!-- 桌面端：横向 5 卡片 + 箭头；移动端：纵向堆叠（箭头与 LOOP 视觉自顶部版迁移） -->
+    <ol class="flex flex-col items-stretch gap-4 lg:flex-row lg:items-center lg:gap-0">
+      <li class="flow-card relative flex-1 rounded-lg border border-slate-700/70 bg-slate-800/40 p-4 transition-colors hover:border-cyan-400/40">
+        <p class="font-mono text-[11px] tracking-widest text-cyan-400/80">01</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-100">解析</h3>
+        <p class="mt-1.5 text-xs leading-relaxed text-slate-500">多源材料结构化抽取，拆解为可溯源的事实单元</p>
+        <span class="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 lg:block">
+          <svg class="flow-arrow h-4 w-5 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+        </span>
+      </li>
+
+      <li class="flex justify-center py-1 lg:hidden">
+        <svg class="flow-arrow h-5 w-4 rotate-90 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+      </li>
+
+      <li class="flow-card relative flex-1 rounded-lg border border-slate-700/70 bg-slate-800/40 p-4 transition-colors hover:border-cyan-400/40 lg:mx-5">
+        <p class="font-mono text-[11px] tracking-widest text-cyan-400/80">02</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-100">生成</h3>
+        <p class="mt-1.5 text-xs leading-relaxed text-slate-500">立足材料起草综述，事实句逐条绑定来源标注</p>
+        <span class="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 lg:block">
+          <svg class="flow-arrow h-4 w-5 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+        </span>
+      </li>
+
+      <li class="flex justify-center py-1 lg:hidden">
+        <svg class="flow-arrow h-5 w-4 rotate-90 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+      </li>
+
+      <li class="flow-card relative flex-1 rounded-lg border border-slate-700/70 bg-slate-800/40 p-4 transition-colors hover:border-cyan-400/40 lg:mx-5">
+        <p class="font-mono text-[11px] tracking-widest text-cyan-400/80">03</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-100">自审</h3>
+        <p class="mt-1.5 text-xs leading-relaxed text-slate-500">脚本校验加独立回查，核对数值与出处一致性</p>
+        <span class="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 lg:block">
+          <svg class="flow-arrow h-4 w-5 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+        </span>
+      </li>
+
+      <li class="flex justify-center py-1 lg:hidden">
+        <svg class="flow-arrow h-5 w-4 rotate-90 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+      </li>
+
+      <li class="flow-card relative flex-1 rounded-lg border border-slate-700/70 bg-slate-800/40 p-4 transition-colors hover:border-cyan-400/40 lg:mx-5">
+        <p class="font-mono text-[11px] tracking-widest text-cyan-400/80">04</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-100">标注</h3>
+        <p class="mt-1.5 text-xs leading-relaxed text-slate-500">为每条事实性陈述补齐 locator 级来源标注</p>
+        <span class="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 lg:block">
+          <svg class="flow-arrow h-4 w-5 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+        </span>
+      </li>
+
+      <li class="flex justify-center py-1 lg:hidden">
+        <svg class="flow-arrow h-5 w-4 rotate-90 text-cyan-400" viewBox="0 0 20 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 8h15M11 2l6 6-6 6"/></svg>
+      </li>
+
+      <li class="flow-card relative flex-1 rounded-lg border border-slate-700/70 bg-slate-800/40 p-4 transition-colors hover:border-cyan-400/40">
+        <p class="font-mono text-[11px] tracking-widest text-cyan-400/80">05</p>
+        <h3 class="mt-2 text-base font-semibold text-slate-100">修正</h3>
+        <p class="mt-1.5 text-xs leading-relaxed text-slate-500">冲突与差异回流修正，闭环迭代直至事实自洽</p>
+        <!-- 回流到解析的回环标记 -->
+        <span class="absolute -right-3 -top-3 hidden items-center justify-center rounded-full border border-cyan-400/40 bg-slate-900 px-2 py-0.5 font-mono text-[10px] text-cyan-400 lg:flex">LOOP</span>
+      </li>
+    </ol>
+
+    <!-- 3. 评分标准对照 -->
+    <p class="mt-14 mb-4 font-mono text-[11px] tracking-[0.25em] text-slate-600">评分标准对照 · RUBRIC</p>
+    <div class="overflow-hidden rounded-lg border border-slate-700/70 bg-slate-800/40">
+      <!-- 行：忠实度 -->
+      <div class="grid gap-3 border-b border-slate-800 px-5 py-4 sm:grid-cols-[9rem_5rem_1fr] sm:items-center">
+        <p class="text-sm font-semibold text-slate-100">忠实度</p>
+        <p class="font-mono text-sm text-cyan-400">50 分</p>
+        <div class="min-w-0">
+          <div class="h-1.5 w-full rounded-full bg-slate-700/60"><div class="h-1.5 rounded-full bg-cyan-400" style="width:50%"></div></div>
+          <p class="mt-2 truncate text-xs text-slate-500">对应模块：<a href="#sec-review" class="text-cyan-400/80 underline decoration-cyan-400/40 underline-offset-2 hover:text-cyan-400">综述终稿</a>（逐句来源标注、数值照录原文）</p>
+        </div>
+      </div>
+      <!-- 行：自审 -->
+      <div class="grid gap-3 border-b border-slate-800 px-5 py-4 sm:grid-cols-[9rem_5rem_1fr] sm:items-center">
+        <p class="text-sm font-semibold text-slate-100">自审机制</p>
+        <p class="font-mono text-sm text-cyan-400">20 分</p>
+        <div class="min-w-0">
+          <div class="h-1.5 w-full rounded-full bg-slate-700/60"><div class="h-1.5 rounded-full bg-cyan-400" style="width:20%"></div></div>
+          <p class="mt-2 truncate text-xs text-slate-500">对应模块：<a href="#sec-audit" class="text-cyan-400/80 underline decoration-cyan-400/40 underline-offset-2 hover:text-cyan-400">审计报告</a>（8 组数值冲突全部「并列 + 判断」）</p>
+        </div>
+      </div>
+      <!-- 行：报告质量 -->
+      <div class="grid gap-3 border-b border-slate-800 px-5 py-4 sm:grid-cols-[9rem_5rem_1fr] sm:items-center">
+        <p class="text-sm font-semibold text-slate-100">报告质量</p>
+        <p class="font-mono text-sm text-cyan-400">20 分</p>
+        <div class="min-w-0">
+          <div class="h-1.5 w-full rounded-full bg-slate-700/60"><div class="h-1.5 rounded-full bg-cyan-400" style="width:20%"></div></div>
+          <p class="mt-2 truncate text-xs text-slate-500">对应模块：<a href="#sec-review" class="text-cyan-400/80 underline decoration-cyan-400/40 underline-offset-2 hover:text-cyan-400">综述终稿</a>（7 章结构、字数达标、locator 精确）</p>
+        </div>
+      </div>
+      <!-- 行：深度使用 -->
+      <div class="grid gap-3 px-5 py-4 sm:grid-cols-[9rem_5rem_1fr] sm:items-center">
+        <p class="text-sm font-semibold text-slate-100">深度使用</p>
+        <p class="font-mono text-sm text-cyan-400">10 分</p>
+        <div class="min-w-0">
+          <div class="h-1.5 w-full rounded-full bg-slate-700/60"><div class="h-1.5 rounded-full bg-cyan-400" style="width:10%"></div></div>
+          <p class="mt-2 truncate text-xs text-slate-500">对应模块：<a href="#sec-process" class="text-cyan-400/80 underline decoration-cyan-400/40 underline-offset-2 hover:text-cyan-400">过程</a> 与 <a href="#top" class="text-cyan-400/80 underline decoration-cyan-400/40 underline-offset-2 hover:text-cyan-400">本页</a>（过程区演示与全页模块联动）</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 三类幻觉陷阱 -->
+    <p class="mt-14 mb-4 font-mono text-[11px] tracking-[0.25em] text-slate-600">三类幻觉陷阱 · TRAPS</p>
+    <div class="grid gap-4 lg:grid-cols-3">
+      <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5">
+        <div class="flex items-center gap-2.5">
+          <span class="font-mono text-[11px] tracking-widest text-cyan-400/80">陷阱 01</span>
+          <h3 class="text-[15px] font-semibold text-slate-100">同主题结论微冲突</h3>
+        </div>
+        <p class="mt-3 text-xs leading-relaxed text-slate-500">
+          <span class="text-slate-300">应对：</span>并列呈现双方口径与证据，说明差异根源，不擅自给出唯一结论。
+        </p>
+      </div>
+      <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5">
+        <div class="flex items-center gap-2.5">
+          <span class="font-mono text-[11px] tracking-widest text-cyan-400/80">陷阱 02</span>
+          <h3 class="text-[15px] font-semibold text-slate-100">多源数值不一致</h3>
+        </div>
+        <p class="mt-3 text-xs leading-relaxed text-slate-500">
+          <span class="text-slate-300">应对：</span>并列全部数值并说明统计口径差异，采信基准口径同时提示其口径宽度。
+        </p>
+      </div>
+      <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5">
+        <div class="flex items-center gap-2.5">
+          <span class="font-mono text-[11px] tracking-widest text-cyan-400/80">陷阱 03</span>
+          <h3 class="text-[15px] font-semibold text-slate-100">诱导性分析</h3>
+        </div>
+        <p class="mt-3 text-xs leading-relaxed text-slate-500">
+          <span class="text-slate-300">应对：</span>严格区分事实与分析性归纳，归纳性表述显式标注「据作者理解」，事实必带来源。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-materials" class="scroll-mt-20 border-b border-slate-800/60 py-20">
+    <p class="mb-3 font-mono text-xs tracking-[0.3em] text-cyan-400/90">SECTION 02</p>
+    <h2 class="text-2xl font-bold text-slate-100 sm:text-3xl">材料</h2>
+    <!-- 顶部统计（JS 填充） -->
+    <div id="materials-stats" class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></div>
+
+    <!-- 7 个材料分组卡片（JS 填充，点击展开片段列表） -->
+    <p class="mt-14 mb-4 font-mono text-[11px] tracking-[0.25em] text-slate-600">材料分组 · 7 GROUPS · 点击展开片段</p>
+    <div id="materials-groups" class="space-y-4"></div>
+  </section>
+
+  <section id="sec-review" class="scroll-mt-20 border-b border-slate-800/60 py-20">
+    <p class="mb-3 font-mono text-xs tracking-[0.3em] text-cyan-400/90">SECTION 03</p>
+    <h2 class="text-2xl font-bold text-slate-100 sm:text-3xl">综述</h2>
+    <p id="review-doc-title" class="mt-3 font-mono text-sm text-slate-500"></p>
+
+    <div class="mt-10 flex flex-col gap-10 lg:flex-row">
+      <!-- 左：7 章导航（桌面端吸附固定，移动端横向滑动） -->
+      <aside class="lg:w-60 lg:shrink-0">
+        <p class="mb-3 hidden font-mono text-[11px] tracking-[0.25em] text-slate-600 lg:block">章节目录 · 7 CHAPTERS</p>
+        <nav id="chapter-nav" aria-label="章节导航" class="flex gap-2 overflow-x-auto pb-1 lg:sticky lg:top-24 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0"></nav>
+      </aside>
+
+      <!-- 右：当前章节正文 -->
+      <article class="min-w-0 flex-1">
+        <div class="mb-8 flex flex-wrap items-baseline justify-between gap-3 border-b border-slate-800 pb-5">
+          <h3 id="chapter-title" class="text-xl font-semibold text-slate-100"></h3>
+          <span id="chapter-counter" class="font-mono text-xs tracking-widest text-slate-500"></span>
+        </div>
+        <div id="chapter-body" class="text-[15px] leading-8 text-slate-300"></div>
+        <p class="mt-10 rounded-lg border border-slate-800 bg-slate-800/40 px-4 py-3 font-mono text-xs leading-relaxed text-slate-500">
+          提示：正文中<span class="mx-1 text-cyan-400">青色下划线</span>标注均为来源引用，点击可弹出面板查看对应材料原文，点击遮罩或关闭按钮收起。
+        </p>
+      </article>
+    </div>
+
+    <!-- 溯源弹出面板（遮罩 + 底部抽屉） -->
+    <div id="source-overlay" class="fixed inset-0 z-[60] bg-slate-950/70 opacity-0 pointer-events-none transition-opacity duration-200"></div>
+    <div id="source-panel" role="dialog" aria-modal="true" aria-label="材料原文"
+         class="fixed inset-x-0 bottom-0 z-[61] translate-y-full transition-transform duration-300 ease-out">
+      <div class="mx-auto flex max-h-[65vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-xl border border-slate-700/80 bg-slate-900 shadow-2xl shadow-cyan-500/10">
+        <div class="flex items-center gap-3 border-b border-slate-800 px-5 py-3.5">
+          <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400"></span>
+          <p id="source-heading" class="min-w-0 flex-1 truncate font-mono text-[13px] text-slate-300"></p>
+          <button id="source-close" type="button" aria-label="关闭面板"
+                  class="shrink-0 rounded-md border border-slate-700 px-2.5 py-1 font-mono text-xs text-slate-400 transition-colors hover:border-cyan-400/50 hover:text-cyan-400">
+            关闭 ESC
+          </button>
+        </div>
+        <div id="source-content" class="overflow-y-auto px-5 py-4"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-audit" class="scroll-mt-20 border-b border-slate-800/60 py-20">
+    <p class="mb-3 font-mono text-xs tracking-[0.3em] text-cyan-400/90">SECTION 04</p>
+    <h2 class="text-2xl font-bold text-slate-100 sm:text-3xl">审计</h2>
+    <p class="mt-3 font-mono text-sm text-slate-500">事实一致性审计报告（终版）· 总体判定：通过</p>
+
+    <!-- 顶部四指标大卡 -->
+    <div id="audit-metrics" class="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4"></div>
+
+    <!-- 8 组数值冲突 -->
+    <div class="mt-14 flex flex-wrap items-baseline justify-between gap-3">
+      <h3 class="text-lg font-semibold text-slate-100">数值冲突 <span class="font-mono text-sm text-cyan-400">8 组</span></h3>
+      <p class="font-mono text-xs text-slate-500">并列呈现 · 口径说明 · 独立判断</p>
+    </div>
+    <div id="audit-conflicts" class="mt-6 grid gap-5 lg:grid-cols-2"></div>
+  </section>
+
+  <section id="sec-process" class="scroll-mt-20 border-b border-slate-800/60 py-20">
+    <p class="mb-3 font-mono text-xs tracking-[0.3em] text-cyan-400/90">SECTION 05</p>
+    <h2 class="text-2xl font-bold text-slate-100 sm:text-3xl">过程</h2>
+    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">自审迭代时间线：四轮修正，从首轮覆盖率 67.7% 到终版 94.2% 达标、数值校验零误报，迭代数字照录原始记录。</p>
+
+    <!-- 竖向时间线：4 轮自审修正 -->
+    <ol class="relative ml-3 mt-12 space-y-8 border-l border-slate-800 pl-8 sm:ml-4 sm:pl-10">
+
+      <!-- 节点 1 -->
+      <li class="relative">
+        <span class="absolute -left-[44px] top-0 flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/50 bg-slate-900 font-mono text-[10px] text-cyan-400 sm:-left-[52px]">1</span>
+        <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5 transition-colors hover:border-cyan-400/40">
+          <p class="font-mono text-[10px] tracking-[0.25em] text-slate-600">ROUND 01 · source_check.py</p>
+          <h3 class="mt-1.5 text-base font-semibold text-slate-100">覆盖率 67.7% → 91.1%</h3>
+          <div class="mt-4 space-y-2.5">
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">问题</p>
+              <p class="text-xs leading-relaxed text-slate-400">分号连接的复合句被整体判为单句，分析性归纳未单列识别，首轮覆盖率仅 67.7%，低于 ≥90% 达标线。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-cyan-400/80">修正</p>
+              <p class="text-xs leading-relaxed text-slate-300">修复分号分句 + 新增分析性归纳识别。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">证据</p>
+              <p class="text-xs leading-relaxed text-slate-500">source_check.py 复核：覆盖率 67.7% → 91.1%。</p>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <!-- 节点 2 -->
+      <li class="relative">
+        <span class="absolute -left-[44px] top-0 flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/50 bg-slate-900 font-mono text-[10px] text-cyan-400 sm:-left-[52px]">2</span>
+        <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5 transition-colors hover:border-cyan-400/40">
+          <p class="font-mono text-[10px] tracking-[0.25em] text-slate-600">ROUND 02 · source_check.py</p>
+          <h3 class="mt-1.5 text-base font-semibold text-slate-100">覆盖率 91.1% → 93.4%</h3>
+          <div class="mt-4 space-y-2.5">
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">问题</p>
+              <p class="text-xs leading-relaxed text-slate-400">「据作者」类表述未被识别为分析性归纳，被误计入须标注的事实句。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-cyan-400/80">修正</p>
+              <p class="text-xs leading-relaxed text-slate-300">识别「据作者」表述。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">证据</p>
+              <p class="text-xs leading-relaxed text-slate-500">source_check.py 复核：覆盖率 91.1% → 93.4%。</p>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <!-- 节点 3 -->
+      <li class="relative">
+        <span class="absolute -left-[44px] top-0 flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/50 bg-slate-900 font-mono text-[10px] text-cyan-400 sm:-left-[52px]">3</span>
+        <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5 transition-colors hover:border-cyan-400/40">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <p class="font-mono text-[10px] tracking-[0.25em] text-slate-600">ROUND 03 · 材料定位</p>
+              <h3 class="mt-1.5 text-base font-semibold text-slate-100">locator 修复</h3>
+            </div>
+            <p class="font-mono text-xs text-cyan-400">访谈内容 <span class="mx-1 text-slate-600">→</span> 访谈一/二/三</p>
+          </div>
+          <div class="mt-4 space-y-2.5">
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">问题</p>
+              <p class="text-xs leading-relaxed text-slate-400">访谈材料的 locator 均为「访谈内容」，引用无法精确到具体访谈。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-cyan-400/80">修正</p>
+              <p class="text-xs leading-relaxed text-slate-300">定位精确到「访谈一/二/三」。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">证据</p>
+              <p class="text-xs leading-relaxed text-slate-500">D3 验收结论：locator 唯一且精确 ✓（终版覆盖率 94.2% 达标）。</p>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <!-- 节点 4 -->
+      <li class="relative">
+        <span class="absolute -left-[44px] top-0 flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/50 bg-slate-900 font-mono text-[10px] text-cyan-400 sm:-left-[52px]">4</span>
+        <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5 transition-colors hover:border-cyan-400/40">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <p class="font-mono text-[10px] tracking-[0.25em] text-slate-600">ROUND 04 · verify_numbers.py</p>
+              <h3 class="mt-1.5 text-base font-semibold text-slate-100">数值零误报</h3>
+            </div>
+            <p class="font-mono text-xs text-cyan-400">需复核 <span class="text-lg font-bold">0</span> 条</p>
+          </div>
+          <div class="mt-4 space-y-2.5">
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">问题</p>
+              <p class="text-xs leading-relaxed text-slate-400">数值校验存在误报：单位写法差异与句中裸数字未被统一识别。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-cyan-400/80">修正</p>
+              <p class="text-xs leading-relaxed text-slate-300">单位归一化 + 裸数字提取。</p>
+            </div>
+            <div class="grid gap-1 sm:grid-cols-[3.5rem_1fr] sm:gap-3">
+              <p class="pt-0.5 font-mono text-[10px] tracking-[0.2em] text-slate-600">证据</p>
+              <p class="text-xs leading-relaxed text-slate-500">verify_numbers.py：综述 418 个数值，疑似无源 0 条 ✓。</p>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ol>
+
+    <p class="mt-10 rounded-lg border border-cyan-400/25 bg-cyan-400/5 px-5 py-4 font-mono text-xs leading-relaxed text-slate-400">
+      终版状态 · 覆盖率 94.2%（≥90% 达标）· 疑似无源 0 条 · locator 唯一且精确 · 总体判定：通过
+      <span class="mt-1 block text-[10px] tracking-wider text-slate-600">来源：D3 事实一致性审计报告（终版）</span>
+    </p>
+  </section>
+
+  <section id="sec-data" class="py-20">
+    <p class="mb-3 font-mono text-xs tracking-[0.3em] text-cyan-400/90">SECTION 06</p>
+    <h2 class="text-2xl font-bold text-slate-100 sm:text-3xl">数据</h2>
+    <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">调研统计可视化：200 家企业的技术方向分布与产业化阶段分布，数据照录 D5 调研统计，数值未作改动。</p>
+    <div class="mt-10 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5">
+        <p class="mb-1 font-mono text-[11px] tracking-[0.2em] text-slate-500">CHART 01 · BAR</p>
+        <h3 class="text-base font-semibold text-slate-100">技术方向分布</h3>
+        <p class="mt-1 text-xs text-slate-500">按企业数量降序 · 单位：家</p>
+        <div id="chart-direction" class="mt-3 h-[360px] w-full"></div>
+      </div>
+      <div class="rounded-lg border border-slate-700/70 bg-slate-800/40 p-5">
+        <p class="mb-1 font-mono text-[11px] tracking-[0.2em] text-slate-500">CHART 02 · PIE</p>
+        <h3 class="text-base font-semibold text-slate-100">产业化阶段分布</h3>
+        <p class="mt-1 text-xs text-slate-500">200 家企业所处阶段 · 单位：家</p>
+        <div id="chart-stage" class="mt-3 h-[360px] w-full"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════ 页脚 ══════════ -->
+<footer class="border-t border-slate-800/80 py-8">
+  <div class="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 font-mono text-xs text-slate-600 sm:flex-row sm:items-center sm:px-6">
+    <p>综述自审溯源 · 技能演示骨架</p>
+    <p>multi-source → cited review → self-audit loop</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 1. 平滑滚动（兼容固定导航高度） ---------- */
+  // 使用 CSS scroll-behavior:smooth + scroll-mt-20 即可；
+  // 这里兜底：无原生平滑滚动时手动计算偏移。
+  var navLinks = document.querySelectorAll('header nav a[href^="#sec-"]');
+  var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  navLinks.forEach(function (link) {
+    link.addEventListener("click", function (e) {
+      var id = link.getAttribute("href").slice(1);
+      var target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      var top = target.getBoundingClientRect().top + window.pageYOffset - 72; /* 导航栏 56px + 间距 */
+      window.scrollTo({ top: top, behavior: prefersReduced ? "auto" : "smooth" });
+      history.replaceState(null, "", "#" + id);
+    });
+  });
+
+  /* ---------- 2. 滚动侦测：高亮当前区块导航 ---------- */
+  var spyMap = {};
+  navLinks.forEach(function (l) { spyMap[l.dataset.spy] = l; });
+  var sections = ["sec-overview", "sec-materials", "sec-review", "sec-audit", "sec-process", "sec-data"]
+    .map(function (id) { return document.getElementById(id); });
+
+  function setActive(id) {
+    navLinks.forEach(function (l) { l.classList.remove("active"); });
+    if (spyMap[id]) spyMap[id].classList.add("active");
+  }
+
+  /* 判定线取视口 42% 高度：自上而下，最后一个越过判定线的区块即为当前区块。
+     基于滚动位置直接计算，与滚动方向无关——IntersectionObserver 方案在上滚时，
+     已经进入视口的高区块不会再触发事件，导致导航停在下方区块（多回退一个板块）。 */
+  var SPY_LINE = 0.42;
+  var spyTicking = false;
+  function spyUpdate() {
+    spyTicking = false;
+    var y = window.pageYOffset + window.innerHeight * SPY_LINE;
+    var current = null;
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (s && s.offsetTop <= y) current = s.id;
+    }
+    setActive(current);
+  }
+  function onSpyScroll() {
+    if (spyTicking) return;
+    spyTicking = true;
+    requestAnimationFrame(spyUpdate);
+  }
+  window.addEventListener("scroll", onSpyScroll, { passive: true });
+  window.addEventListener("resize", onSpyScroll);
+  spyUpdate();
+
+  /* ---------- 3. Hero 画布：低亮度网格 + 扫描线 ---------- */
+  var canvas = document.getElementById("hero-canvas");
+  if (canvas && !prefersReduced) {
+    var ctx = canvas.getContext("2d");
+    var w, h, t = 0, raf;
+
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      t += 0.006;
+
+      // 缓慢漂移的扫描横线
+      var scanY = (Math.sin(t) * 0.5 + 0.5) * h;
+      var grad = ctx.createLinearGradient(0, scanY - 60, 0, scanY + 60);
+      grad.addColorStop(0, "rgba(34,211,238,0)");
+      grad.addColorStop(0.5, "rgba(34,211,238,0.07)");
+      grad.addColorStop(1, "rgba(34,211,238,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, scanY - 60, w, 120);
+
+      // 稀疏的漂浮光点
+      for (var i = 0; i < 26; i++) {
+        var px = ((i * 173.3 + t * 22) % (w + 80)) - 40;
+        var py = (i * 97.7) % h;
+        var r = 0.8 + (i % 3) * 0.5;
+        ctx.beginPath();
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(34,211,238," + (0.05 + (i % 4) * 0.02) + ")";
+        ctx.fill();
+      }
+      raf = requestAnimationFrame(draw);
+    }
+
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) { cancelAnimationFrame(raf); } else { draw(); }
+    });
+  }
+})();
+</script>
+<script>
+/* ===== P2 数据常量（内容原样嵌入，未删改） ===== */
+const REVIEW_DOC_TITLE = "大模型技术发展及智能体应用研究报告";
+const REVIEW_CHAPTERS = [
+ {
+  "chapter": "第一章 行业概述",
+  "body": "大模型技术以大规模预训练模型为核心，将自然语言处理、计算机视觉、语音识别与多模态融合等功能集成于统一技术体系，可在参数量超过千亿、训练数据超过万亿 token 的条件下保持推理性能稳定，是智能客服、内容生成、医疗健康与自动驾驶等领域的关键支撑技术【行业白皮书节选，第一章】。与传统 AI 相比，大模型技术在参数量和训练数据规模上实现了数量级的跨越，使得单一模型能够覆盖更广泛的任务场景，这也构成了本轮人工智能产业爆发的基础【行业白皮书节选，第一章】。\n\n在产业规模方面，2025 年中国人工智能核心产业规模突破 1.2 万亿元，同比增长 30%【行业白皮书节选，第一章】。相关专利申请量达 2.9 万项，中国 AI 企业数量超过 6200 家，同比增长 27%【行业白皮书节选，第一章】。工业和信息化部部长李乐成在十四届全国人大四次会议\"部长通道\"上确认，2025 年我国人工智能核心产业规模超过 1.2 万亿元【行业新闻集，新闻六】。全球人工智能市场规模已达 7575.8 亿美元，这一规模反映了人工智能在全球范围内的快速扩张态势【行业白皮书节选，第一章】。预计到\"十五五\"末，中国人工智能相关产业规模将突破 10 万亿元【行业白皮书节选，第一章】。大模型的应用价值已在智能客服、内容生成、医疗健康与自动驾驶等领域得到初步验证，成为推动人工智能核心产业规模增长的关键力量，这些领域的落地实践共同构成了大模型商业化应用的基本盘【行业白皮书节选，第一章】。\n\n从全球竞争格局看，截至 2025 年 9 月，全球人工智能企业突破 3.7 万家，其中美国占 36.4%、中国占 15.9%【行业白皮书节选，第一章】。产业高价值企业高度集中在中美两国，共占全球独角兽企业总数的 83.3%【行业白皮书节选，第一章】。在模型层面，2025 年至 2026 年上半年，美国发布 AI 模型 50 个，中国发布 30 个，主流模型性能榜单前排位次悉数由中美机构瓜分【行业白皮书节选，第一章】。截至 2025 年 7 月，全球共发布 3755 个人工智能模型，中国以 1509 个居首、占比 40%，覆盖 50 个重点行业领域、700 余个场景【行业白皮书节选，第一章】。中美前沿模型性能差距已实质性收窄，自 2025 年初起两国模型在主流评测榜单上多次互换榜首位置【行业白皮书节选，第一章】。这一竞争格局表明，人工智能产业的高价值环节（基础模型与独角兽企业）高度集中于中美两国，两国在模型研发上的并驾齐驱构成了全球 AI 竞争的主轴【行业白皮书节选，第一章】。从模型发布数量的对比看，美国在绝对数量上领先，但中国凭借 1509 个模型、覆盖 50 个重点行业领域与 700 余个场景的广度，在应用层落地场景的丰富性上形成了自身优势，这表明两国在模型层差距之外，也在以差异化的路径参与竞争【行业白皮书节选，第一章】。从全球市场预测看，全球 AI 市场规模预计从 2025 年的 1.1 万亿美元增至 2030 年的 6.9 万亿美元，增长约 5.3 倍【行业白皮书节选，表2】。\n\n不过，专家对\"1.2 万亿元\"这一口径提出了质疑。林教授指出，该数字包含了大量传统信息化改造项目，真正与大模型直接相关的可能只有约 8000 亿元左右【专家访谈记录，访谈二】。行业评论人士也认为，其中至少 30% 是传统信息化改造项目重新归类到 AI 名下，核心产业规模可能在 8000 亿到 9000 亿之间【行业评论集，评论七】。综合判断：官方口径的\"1.2 万亿元\"与专家口径的\"约 8000 亿—9000 亿元\"存在差异，根源在于统计口径对\"传统信息化\"与\"大模型直接相关\"的界定不同；本报告对两个口径并列呈现，采信官方数据作为基准、同时提示其口径较宽。综合来看，大模型技术已构成人工智能产业新一轮增长的核心驱动力，而中美两国在基础模型、产业规模与落地场景上的竞争与合作，将决定这一轮技术浪潮的全球格局，产业规模官方口径与专家口径之间的落差本身，也反映了行业统计标准尚未统一、不同主体对人工智能核心产业边界界定存在差异的现实。"
+ },
+ {
+  "chapter": "第二章 推理优化与模型压缩",
+  "body": "大模型推理优化的主要技术路线包括 KV Cache、投机解码、量化推理与知识蒸馏等【论文摘要集，论文C】。其中 KV Cache 与投机解码聚焦解码阶段的计算冗余消除，量化推理与知识蒸馏则通过降低精度或压缩模型规模来降低推理成本，两者共同构成推理侧降本增效的技术组合，覆盖了从硬件资源利用到模型规模压缩的多个优化维度【论文摘要集，论文C】。论文摘要集指出，大模型推理的本质是自回归生成——每生成一个新 token 都需要查看之前所有 token 的计算结果，实测 Llama-2-7B 在单张 A100 上未经优化的推理速度仅约 7 秒/token，远低于理论性能【论文摘要集，论文C】。其对推理优化技术的理想效果给出了量化描述：KV Cache 可将 Llama-2-7B 的推理速度从约 7 秒/token 提升至约 0.05 秒/token，提速约 140 倍【论文摘要集，论文C】；投机解码可将端到端推理速度提升 1.5—2.5 倍【论文摘要集，论文C】；vLLM 的 PagedAttention 可将显存利用率从约 60% 提升至 90% 以上，吞吐量提升 2—4 倍【论文摘要集，论文C】。\n\n在 KV Cache 技术层面，其原理是缓存历史 token 在每层 Transformer 中计算得到的 Key 和 Value，避免解码阶段重复计算历史 token 的注意力，从而将每步计算从 O(n²) 降至 O(n)，被定位为 LLM 推理加速的基石【论文摘要集，论文C】。但 KV Cache 的主要挑战是显存占用：对于 32K token 的长上下文场景，KV Cache 可能消耗超过 10GB 显存，达到模型权重本身的规模【论文摘要集，论文C】。优化方案包括 PagedAttention（分页管理 KV Cache）、量化 KV Cache（FP16→INT8）和 Prefix Caching 等【论文摘要集，论文C】。据作者理解，量化与 Prefix Caching 分别通过降低数值精度与复用相同前缀的缓存，起到压缩显存占用、减少重复计算的作用。这些优化手段的目标都在于在不显著损失精度的前提下，缓解自回归生成带来的计算与显存压力，从而在长上下文与高并发场景下维持可接受的推理时延与吞吐。投机解码则使用一个小模型（draft model）快速生成候选 token 序列，再由大模型（target model）并行验证，在预测正确时一步生成多个 token，实测在 Llama-2-7B 与 Llama-2-70B 的组合中可将端到端推理速度提升 1.5-2.5 倍【论文摘要集，论文C】。\n\n然而，技术评测报告的独立实测数据与上述理想值存在明显差异。关于 KV Cache，实测显示其加速效果随序列长度增长显著提升：在 128 token 短序列下仅约 15.8 倍，512 token 下约 60.7 倍，2048 token 下约 225.9 倍，8192 token 下约 727.8 倍，在 32768 token 长序列下可达 1822.6 倍，但长序列下 KV Cache 占用约 14.5GB 显存、占 A100 80GB 显存的 18%，综合加速通常在 5 到 20 倍之间，而非 140 倍【技术评测报告，表1】【技术评测报告，1.3】。关于投机解码，实测端到端加速在复杂推理任务（GSM8K）下仅约 1.31 倍、接受率仅 42.3%，在代码生成任务（HumanEval）下约 1.48 倍、接受率 51.8%，在简单问答任务下可达 2.82 倍、接受率 78.5%，综合 1.3—1.5 倍【技术评测报告，表2】【技术评测报告，2.3】。关于 vLLM，实测吞吐量提升随并发数变化：并发数 1 时约 1.16 倍，并发 8 时约 1.78 倍，并发 32 时约 2.02 倍，并发 128 时约 1.81 倍，并发 256 时约 1.58 倍，在最佳并发数（32）下提升最大，实际生产环境通常在 1.5 到 2 倍之间，而非 2 到 4 倍【技术评测报告，表3】【技术评测报告，3.3】。\n\n技术评测报告在统一硬件环境下完成实测，评测环境为 NVIDIA A100 80GB x 8、CUDA 12.1、PyTorch 2.3，评测时间为 2026 年 4 月至 6 月，所有数据均在同一硬件环境下实测获得【技术评测报告，正文】。这一\"理想值 vs 实测值\"的冲突得到多位专家的印证。陈教授指出，KV Cache 实际加速约 5 到 10 倍、vLLM 吞吐量提升约 1.5 倍、投机解码端到端加速约 30% 到 50%【专家访谈记录，访谈一】。行业评论人士赵明认为 KV Cache 的 140 倍是短序列理想条件下的数字，实际 5 到 10 倍，vLLM 实际 1.5 到 2 倍【行业评论集，评论五】。陈晓则指出投机解码的实际收益仅 30% 到 50%，因为复杂任务中 draft model 的接受率通常只有 40% 到 60%【行业评论集，评论六】。在生产环境优化中，TTFT（Time To First Token）、TPOT（Time Per Output Token）、吞吐量和显存利用率之间存在复杂的权衡关系，需根据场景调优，生产环境的优化不仅是单次请求性能，更需关注并发场景下的 TTFT、TPOT 与吞吐量平衡【论文摘要集，论文C】。综合判断：论文数据通常在特定 benchmark 和理想条件下测得，实际生产部署需考虑请求分布、并发策略与系统开销，因此实测加速普遍低于论文声称值，这一分歧的根源在于评测条件差异，而非某一方数据错误。综合来看，推理优化技术呈现出论文理想值与生产实测值之间的系统性落差，对产业实践而言，技术选型应当以贴近生产环境的实测数据为依据，同时兼顾显存、时延、吞吐与精度之间的权衡，而非简单套用论文中在特定条件下取得的极限指标。"
+ },
+ {
+  "chapter": "第三章 多模态训练与应用",
+  "body": "多模态训练研究揭示了语言理解、视觉理解与视觉生成三项任务之间的协作与竞争规律。Meta AI 研究院、Meta 现实实验室与牛津大学联合研究团队通过大量受控实验，在真实大规模网络数据和人工合成数据集（CLEVR 程序化三维场景生成器）上系统解剖三项任务的关系，验证模型为 130 亿参数的混合专家（MoE）模型、在 2 万亿词符上训练，并据此得出四条核心规律【论文摘要集，论文B】【行业新闻集，新闻五】。\n\n其一，知识单向流动：语言训练对视觉理解和视觉生成均有显著促进作用，视觉理解对视觉生成有催化作用，但视觉生成对语言和视觉理解几乎无帮助；语言数据占比从 0% 提升到 80% 时，视觉理解和生成表现单调递增【论文摘要集，论文B】。其二，概念层次决定迁移：颜色和形状等低级属性完全无法跨任务迁移，空间关系、大小比较、数量计数等高级结构概念存在从理解到生成的单向迁移【论文摘要集，论文B】。其三，架构决定协作与竞争：注意力机制和归一化层是跨模态协作的桥梁、应共享，前馈网络是竞争的来源、应按模态独立；仅拆分前馈网络（MoE 架构）效果最优，语言困惑度提升 0.211，而三层全拆则等同于独立训练、无跨模态收益【论文摘要集，论文B】。其四，越早融合越好——即视觉懒惰现象：语言预训练时间越长，视觉通路的激活幅度越小、图像标记嵌入越短、注意力放在图片上的比例越低，模型越倾向用语言推理走捷径而非学习视觉特征，推迟引入视觉虽在初期能轻微提升语言能力，但视觉能力损失显著且持续【论文摘要集，论文B】。\n\n在最优训练配方上，该研究通过数十个 1 万亿词符训练实验的大规模数据配比网格搜索得出：语言 70%、视觉理解 25%、视觉生成 5%【论文摘要集，论文B】【行业新闻集，新闻五】。在此配比下，语言准确率和视觉理解分数均达最高，视觉生成质量也同等最优，尽管生成数据仅占 5%、仅是常规\"均等分配\"方案的五分之一【论文摘要集，论文B】。\n\n然而，这一\"70/25/5\"配比在更大规模下受到质疑。技术评测报告在 700 亿参数规模上对比了四种配比方案：70/25/5 配比的语言困惑度为 6.82、视觉理解准确率 78.3%、视觉生成 FID 12.4；55/30/15 配比为 7.15、81.5%、10.2；40/40/20 均衡配比为 7.68、80.1%、11.8；80/15/5 语言主导配比为 6.45、74.2%、14.6【技术评测报告，表4】【技术评测报告，4.3】。综合判断：70/25/5 的语言困惑度最低，但视觉理解与视觉生成并非最优，55/30/15 在视觉任务上更优。林教授同样指出，70/25/5 是在 130 亿参数特定规模下得出的，在 700 亿参数规模下 55/30/15 效果更好，因为生成任务对理解任务有正向反馈【专家访谈记录，访谈二】。行业研究员王思齐也认为，Meta 论文说的视觉懒惰现象可通过学习率调度和 warmup 策略缓解，MoE 比密集模型好的结论在千亿参数规模需打折扣、两者差距不超过 3%【行业评论集，评论三】。林教授进一步指出，在真正的超大规模（千亿参数）上，密集模型的全参数共享反而有助于跨模态知识的深度耦合，而 MoE 的专家路由会增加通信开销，在多机多卡环境下这一开销可能抵消独立计算带来的收益【专家访谈记录，访谈二】。此外，该研究还发现了任务复杂度效应：当任务极度简单时反而促进协作，复杂任务引发竞争（真实图片训练使语言能力下降），这解释了为何不同研究对多模态联合训练效果的结论不一致【论文摘要集，论文B】。综合判断：多模态最优配比并非一成不变，而是随模型规模变化；70/25/5 适用于 130 亿参数规模，55/30/15 在 700 亿参数规模下视觉任务更优，不应当把某一配比当作通用最优规律。综合来看，多模态训练研究揭示的核心价值在于，语言、视觉理解与视觉生成之间存在明确的依赖方向与竞争关系，最优训练配方随模型规模与任务复杂度而变，这意味着多模态模型的训练设计不能脱离具体规模与目标场景，而应当把数据配比、架构选择与训练时机作为需要联合优化的变量来对待。"
+ },
+ {
+  "chapter": "第四章 智能体设计与协作",
+  "body": "根据 OpenAI 的 AGI 路线图，AI 能力划分为五级：L1 聊天机器人、L2 推理者、L3 智能体（不仅能思考，还可采取行动的 AI 系统）、L4 创新者、L5 组织者，行业已无可置疑地进入了 AI 的 L3 时代【行业白皮书节选，第二章】。智能体设计模式是经过实战检验的模板和蓝图。Google 高级工程总监 Antonio Gulli 在《Agentic Design Patterns: A Hands-On Guide to Building Intelligent Systems》一书中系统总结了 21 个核心智能体设计模式【行业白皮书节选，第五章】。这些设计模式涵盖三个层次：基础模式（提示链、路由、并行化）用于任务分解与流程编排，高级模式（多智能体协作、记忆管理、知识检索 RAG）用于复杂推理与知识增强，生产级模式（护栏与安全、MCP 协议、A2A 通信）用于安全控制与互操作性，模式之间可组合使用，智能体设计的真正力量在于多种模式的巧妙组合而非单一应用【行业白皮书节选，第五章】【行业白皮书节选，表4】。\n\n在多智能体协作方面，论文摘要集介绍了 KARMA 框架，该框架首次将多智能体 LLM 系统系统化应用于知识图谱增强任务，设计了九个专业化智能体协作完成文档解析、实体发现、关系提取、模式对齐与冲突消解的全流程【论文摘要集，论文D】。九个专业化智能体分别聚焦文档解析、实体发现、关系提取、模式对齐、冲突消解等单一职能，通过结构化的消息传递协议进行协作【论文摘要集，论文D】。该框架通过智能体间的交叉验证与基于辩论的冲突消解策略缓解幻觉问题，当两个智能体对同一实体或关系给出不同判断时，触发辩论机制、由仲裁智能体裁决【论文摘要集，论文D】。\n\nKARMA 框架的主要贡献包括首次系统化将多智能体 LLM 应用于知识图谱增强、设计跨智能体验证与迭代优化机制、以及实现领域自适应与模块化设计，可适配不同领域的知识图谱构建任务【论文摘要集，论文D】。但这一九智能体协作方案在实际工程中面临挑战。技术评测报告实测显示，多智能体协作的成功率随智能体数量增加显著下降：2 个智能体时成功率 94%、平均完成时间 3.2 分钟、错误传播率 5%；3 个智能体时成功率 82.5%、平均完成时间 5.8 分钟、错误传播率 15%；5 个智能体时成功率 61.3%、平均完成时间 9.4 分钟、错误传播率 35%；9 个智能体时降至 38.7%、平均完成时间 15.6 分钟、错误传播率升至 58%【技术评测报告，表5】。评测结论指出，3 个智能体是实用临界点，超过 3 个后协作的工程复杂度呈指数级增长，错误传播率与调试难度同步攀升【技术评测报告，5.3】。周研究员也指出，KARMA 这类九智能体框架在学术论文里效果很好，但实际业务中三个智能体以上的协作就很难稳定运行，21 种模式中真正高频使用的不超过 5 种【专家访谈记录，访谈三】。行业评论人士孙浩同样认为，多智能体协作的工程复杂度是单智能体的指数级增长，很多企业最后还是退回到单智能体加提示链的方案【行业评论集，评论八】。综合判断：多智能体协作模式的理论价值与工程可行性之间存在显著落差，学术框架中的大规模协作尚不具备规模化部署条件，实际工程应优先采用 2 到 3 个智能体的协作方案。这一发现提示，智能体系统的设计应当在模式完备性与工程可行性之间寻求平衡，而非一味追求协作智能体的数量。"
+ },
+ {
+  "chapter": "第五章 市场格局与资本趋势",
+  "body": "中国 AI 智能体市场规模呈现高速增长但口径分歧明显的特征。IDC 数据显示，2025 年中国企业级 AI 智能体市场规模约为 212 亿元，预计 2026 年将增至 449 亿元（同比增速超 110%），到 2029 年有望突破 3320 亿元【行业白皮书节选，表1】【行业新闻集，新闻三】。2026 年因此被称为智能体规模化落地的元年【行业新闻集，新闻三】。赛迪顾问测算，2026 年中国智能体软件与应用市场规模将达 135.3 亿元，同比增速超 70%，其中制造、能源、金融、政务四大领域合计占比超 70%，国内 AI 智能体相关服务商已突破数百家【行业白皮书节选，第二章】【行业新闻集，新闻三】。两者相差 3 倍多，源于统计口径不同：IDC 口径可能包含所有使用了 AI 功能的企业软件，赛迪口径更窄、只算专门的智能体平台【行业评论集，评论二】。\n\n对此，陈教授基于团队测算认为，2026 年中国企业级 AI 智能体市场实际规模约在 220 亿元左右，约为 IDC 预测的一半【专家访谈记录，访谈一】。行业分析师李峰则判断实际规模在 200 亿到 250 亿之间【行业评论集，评论二】。综合判断：449 亿元（IDC）与 135.3 亿元（赛迪）代表不同的统计口径，而专家测算口径（约 220 亿元、200—250 亿元）明显低于 IDC 口径；在综述中应当并列呈现并说明口径差异，而非将 IDC 的 449 亿元当作既定事实。\n\n在资本与投资方面，2025 年全球企业 AI 投资总额达 4.2 万亿元，同比增长 129.9%，其中私募投资为 2.4 万亿元、占近六成【行业白皮书节选，第三章】。2025 年中国人工智能融资事件与融资金额分别增至 1579 起和 1504 亿元，资本配置重点转向生成式 AI、具身智能、AI 芯片和行业应用等高成长赛道【行业白皮书节选，第三章】【行业新闻集，新闻二】。单笔超 10 亿元融资事件数量较上年翻倍，资金加速向头部企业集中【行业白皮书节选，第三章】。生成式 AI 以 1.2 万亿元私募投资占据全球 AI 私募总量近 50%，同比增长逾 200%【行业白皮书节选，第三章】。从融资结构看，AI 企业融资仍高度依赖一级市场，产业仍处于高估值与高预期并存的扩张周期【行业白皮书节选，第三章】。不过，评论人士郑文指出，4.2 万亿元中很大一部分是基础设施投资（数据中心、芯片）而非 AI 应用层面投资，生成式 AI 的 1.2 万亿元中也有相当比例是打着 AI 旗号的传统云计算投入【行业评论集，评论十】。\n\n在算力需求方面，2024 年初中国日均 Token 调用量约 1000 亿，2025 年底升至约 100 万亿，2026 年 3 月突破 140 万亿，两年间增长超千倍【行业白皮书节选，表3】【行业新闻集，新闻四】。大模型仍是智能算力需求的核心来源，算力消耗已从预训练扩展至后训练、推理服务和智能体执行，Token 调用量增长使推理侧成为 2026 年智能算力需求的主要增量来源，两年间推理侧算力需求呈指数级增长态势【行业白皮书节选，第四章】。但评论人士刘洋指出，其中至少 60% 来自免费 API 和试用，转化为付费推理的不超过 20%，真正对推理算力有压力的是长上下文和复杂推理任务，其增速可能在 50 到 100 倍之间【行业评论集，评论四】。周研究员同样认为，Token 调用量两年千倍增长这个数据基本可信，但很大一部分来自免费 API 和试用、转化为付费推理的比例估计不超过 20%，很多调用是短序列的简单问答、单次算力消耗很低【专家访谈记录，访谈三】。从算力需求的结构变化看，算力消耗的重心正从一次性的大规模预训练投入，转向持续性的推理服务运营，这对推理优化技术的降本增效提出了更高要求【行业白皮书节选，第四章】。综合来看，中国 AI 智能体市场在高速增长的表象之下，同时存在统计口径分歧显著、专家测算与机构预测落差明显、付费转化率偏低等多重不确定因素，市场规模的判断需要在机构预测、专家测算与实地调研之间相互印证。资本市场的热情与产业实际落地之间存在的差距，提示市场判断需要建立在更严谨的数据口径与更务实的落地评估之上，避免以单一机构的预测代替对产业真实状态的认识。\n\n在企业落地层面，57.3% 的受访企业表示已在生产环境中运行智能体，但在任何单一业务职能中规模化部署智能体的企业占比均未超过 10%【行业白皮书节选，第二章】【行业新闻集，新闻七】。从企业应用现状看，智能体已进入企业试点和局部部署阶段，但距离跨职能、端到端流程接管仍有一定差距【行业白皮书节选，第二章】。中国大模型落地主要集中于互联网、金融、工业制造、消费零售和教育五类场景，应用案例占比分别为 31.8%、14.7%、12.2%、8.1% 和 6.5%，合计 73.3%【行业白皮书节选，第二章】。据易观分析数据，6 月份国内 17 款主流桌面端 AI 原生办公智能体月度总访问量突破 6000 万次，而 3 月仅为 2000 万次，三个月增长 3 倍【行业新闻集，新闻三】。腾讯、阿里、字节三家互联网巨头在半年内完成从产品试水到组织架构的全线调整，全面布局 AI 办公智能体赛道，反映出头部厂商对办公智能体这一入口级场景的战略重视【行业新闻集，新闻三】。阶跃星辰联合创始人、CTO 朱亦博在峰会上表示，行业已无可置疑地进入了 AI 的 L3 时代，即智能体不仅能思考、还可采取行动【行业新闻集，新闻二】。对此，评论人士林芳认为，57.3% 这个数字有误导性，真正在核心业务流程中部署智能体的企业很少，端到端流程自动化可能 1% 都不到【行业评论集，评论十二】。在机构预测方面，Gartner 预测 2026 年全球终端用户在 AI 模型及平台领域的总支出将达到 640 亿美元，较 2025 年的 390 亿美元增长 63.4%，其中 AI 平台支出预计增长 36.9%【行业新闻集，新闻七】。Stratistics MRC 数据显示，全球企业 AI 平台市场预计 2026 年达 167 亿美元，到 2034 年有望增至 965 亿美元【行业新闻集，新闻七】。IDC 数据显示，2025 年国内活跃企业智能体已接近 200 万个，预计 2031 年将达 3.5 亿个，Gartner 预测到 2026 年底 40% 的企业将使用 AI 智能体【行业新闻集，新闻七】。"
+ },
+ {
+  "chapter": "第六章 成本与产业化分析",
+  "body": "大模型训练成本是产业化分析的核心议题，也是材料中数值冲突最集中的领域。关于 DeepSeek-R1 的强化学习训练成本，论文摘要集与新闻集均表述为\"仅约 29.4 万美元\"【论文摘要集，论文A】【行业新闻集，新闻一】。但陈教授指出，这一数字只算了最后的微调阶段，R1 的强化学习训练成本实际约 290 万美元【专家访谈记录，访谈一】。关于基础模型 DeepSeek-V3 的训练成本，论文摘要集与评论人士张维均表述为约 600 万美元【论文摘要集，论文A】【行业评论集，评论一】，而陈教授称其为约 6000 万美元【专家访谈记录，访谈一】。关于 R1 的总训练投入，陈教授认为接近 6300 万美元【专家访谈记录，访谈一】，评论人士张维也认为总成本在 6300 万美元以上【行业评论集，评论一】。此外，R1 于 2025 年 2 月 14 日投稿、9 月 17 日正式发表，8 位外部专家历时 5 个月对论文进行严格审查，是首个经过顶级期刊独立同行评审的主流大语言模型【论文摘要集，论文A】。Nature 在编辑评论中指出，几乎所有主流大模型都未曾经历过类似的独立同行评审【论文摘要集，论文A】。R1 在 Hugging Face 上的下载量已达 1090 万次，成为最受欢迎的开源推理模型之一【论文摘要集，论文A】。在技术方法上，R1 采用纯粹强化学习路径，关键技术包括组相对策略优化（GRPO）——模型使用估算值为自己的尝试打分而非使用独立价值模型，其基础模型基于 DeepSeek-V3、使用英伟达 H800 芯片训练【论文摘要集，论文A】。Nature 审稿人、Hugging Face 机器学习工程师 Lewis Tunstall 指出，几乎所有 2025 年 LLM 强化学习研究都或多或少受到 R1 启发，称 R1 引发了一场革命【论文摘要集，论文A】。从成本结构看，这一争议揭示了训练成本的复杂性：论文口径的 29.4 万美元仅对应强化学习阶段的 GPU 租用费用，而基础模型 V3 的训练成本以及数据清洗、标注、人力等隐性投入往往被媒体忽略，评论人士张维亦指出 29.4 万美元只是最后强化学习阶段的 GPU 租用费用、没有算上基础模型约 600 万美元的训练投入、数据清洗标注成本与团队人力成本【论文摘要集，论文A】【行业评论集，评论一】。综合判断：上述差异源于口径不同——\"29.4 万美元\"仅对应最后强化学习阶段的 GPU 租用费用，\"290 万美元\"可能包含了更完整的 RL 阶段投入，\"6300 万美元\"则覆盖了基础模型、数据清洗、标注与人力等全部成本；本报告将这些数值并列呈现，采信论文原口径的\"29.4 万美元（RL 阶段）\"作为基准，同时提示总训练投入的完整口径可能高达数千万美元量级。\n\n在技术路线的争议上，DeepSeek 团队在与审稿人的交流中明确声明，R1 并非通过复制 OpenAI 模型生成的推理示例来学习【论文摘要集，论文A】。但陈教授指出，R1 在训练过程中其实使用了大量 OpenAI 模型生成的推理示例做蒸馏，这一点在论文附录中有暗示【专家访谈记录，访谈一】。在 R1 的技术路线中，R1-Zero 为纯 RL 版本，R1 则在强化学习前加入少量冷启动数据以改善可读性【论文摘要集，论文A】。评论人士吴帆也指出，R1-Zero（纯 RL 版本）的可读性和一致性存在明显问题，R1 版本实际上加入了冷启动数据，而将 R1 蒸馏到更小模型（1.5B 至 70B 参数）的可行性验证，反而说明蒸馏路径比纯 RL 路径更实用【行业评论集，评论九】【论文摘要集，论文A】。论文摘要集则记录了蒸馏验证的结果：蒸馏后的小模型在多项基准上表现优异，证明蒸馏是有效的模型压缩路径【论文摘要集，论文A】。综合判断：R1 究竟是否\"纯 RL\"是材料中的结论性冲突，论文正文口径与专家/评论口径存在张力，本报告并列呈现双方观点、不作唯一结论。\n\n在产业化的规模化落地方面，调研数据表覆盖 200 家企业，其平均年研发投入为 1055 万元，市场预期总额达 44574 亿元，这两项指标勾勒出当前企业在大模型与智能体方向上的整体投入规模与市场预期【调研数据表，汇总】。据作者对调研数据表 200 家企业明细逐条统计，技术方向以模型压缩（26 家）、AI 芯片（24 家）、知识图谱（24 家）、数据平台（23 家）、边缘推理（23 家）数量最多【调研数据表，序号】；产业化阶段以中试（48 家）、规模化部署（42 家）、小试（41 家）为主，实验室研发（36 家）与应用推广（33 家）相对均衡【调研数据表，序号】。从具体企业看，调研数据表记录了杭州智创科技（推理优化方向，vLLM 推理平台，推理加速 4 倍、显存利用率 73%）、武汉星通创新（AI 芯片方向，边缘 AI SoC，能效比 162TOPS/W、制程 14nm）、北京华创算力（智能体设计方向，护栏安全框架，性能指标 90 分、延迟 22ms）等代表企业，其关键参数与产业化阶段反映了当前企业的技术布局【调研数据表，序号1】【调研数据表，序号2】【调研数据表，序号3】。这表明大量企业仍处于产业化早期阶段，从实验室到规模化落地的过程仍面临显著挑战。平均年研发投入 1055 万元、市场预期总额 44574 亿元这两个汇总指标，分别反映了企业在大模型与智能体方向上的投入力度与对市场前景的整体判断【调研数据表，汇总】。综合来看，从技术方向的结构看，模型压缩、AI 芯片、知识图谱、数据平台与边缘推理位列前五，说明当前企业的布局既覆盖了大模型推理侧的降本需求，也延伸至底层算力、数据基础设施与行业知识沉淀等更上游的环节，技术布局呈现出从应用向基础设施回溯的趋势。\n\n在企业估值方面，据报道 Anthropic 已向美国证券交易委员会秘密提交 IPO 相关文件，预计 2026 年 10 月以超过 2 万亿美元的估值上市【行业新闻集，新闻八】。Anthropic 成立于 2021 年，由达里奥·阿莫迪和丹妮拉·阿莫迪兄妹创立【行业新闻集，新闻八】。此前 Anthropic 曾获 20 亿美元融资，由光速创投领投，估值从一年前的 180 亿美元跃升至 600 亿美元【行业新闻集，新闻八】。Anthropic 推出的 Claude Code（终端 AI 编程助手）被视为 AI 进入 L3 智能体时代的标志性产品【行业新闻集，新闻八】。但周研究员指出，Anthropic 年收入大约在 30 到 50 亿美元之间，2 万亿估值意味着上百倍的市销率，这在任何行业都是极端的【专家访谈记录，访谈三】。评论人士马俊也认为，AI 行业整体估值偏高，部分原因是资本追逐稀缺标的造成的，而非基本面支撑【行业评论集，评论十一】。在产业化路径上，智能体应用的核心机会将围绕大模型、Agent、物理 AI 和 AI4S（AI for Science）展开：大模型提供认知底座，Agent 承接数字任务执行，物理 AI 推动智能系统进入真实环境，AI4S 重构科研发现和产业研发流程，四类能力协同推进将扩大 AI 对产业效率、科学研究和物理世界自动化的影响范围【行业白皮书节选，第五章】。这一产业化路径勾勒出 AI 从认知、到数字执行、再到物理世界与科学发现的递进图景【行业白皮书节选，第五章】。综合来看，大模型训练与推理的成本变化呈现训练成本口径复杂、推理成本随调用量增长而上升的特征，而调研数据表所反映的企业研发投入与产业化阶段分布，则提示从实验室到规模化落地的过程仍需跨越技术、成本与工程的多重门槛。成本分析的核心启示在于，对训练成本的判断必须明确口径边界，将单阶段 GPU 成本与全生命周期总成本加以区分；而对产业化进程的判断，则需要结合企业的研发投入强度、产业化阶段分布与市场预期等多项指标综合评估，避免以单一数字或单一维度替代对产业成熟度的整体把握。"
+ },
+ {
+  "chapter": "第七章 趋势与展望",
+  "body": "综合前文分析，大模型技术与智能体应用呈现出以下发展趋势。\n\n其一，推理优化技术从\"理想值\"走向\"实测值\"的回归。论文宣称的 140 倍 KV Cache 加速、2—4 倍吞吐提升在实际生产中普遍打折扣，产业界更应关注真实生产环境下的综合表现【技术评测报告，6.1】。这一趋势意味着，技术选型应建立在生产环境的实测数据之上，而非论文 benchmark 的理想值，推理侧算力需求的增长也需要结合 Token 调用量中付费比例的审慎测算，避免被表面数字误导。\n\n其二，多模态训练配比不存在通用最优解，需随模型规模动态调整【技术评测报告，6.2】。70/25/5 与 55/30/15 的差异说明，多模态模型的训练配方应当与模型规模、任务目标相匹配，而非套用单一结论。\n\n其三，多智能体协作的实用规模被约束在 2—3 个智能体以内，学术框架的大规模协作尚待工程化突破【技术评测报告，6.3】。九智能体框架在学术上的成功与工程上的落差提示，多智能体系统的设计需要在理论完备性与工程可行性之间取得平衡，护栏、可观测性与错误定位能力将成为实用化的关键。\n\n其四，AI 智能体市场与投资存在高估值与高预期并存的态势，商业模式和盈利能力仍需验证【专家访谈记录，访谈三】【行业评论集，评论十】。57.3% 的企业宣称已运行智能体、但规模化部署占比均不足 10%，这一落差提示市场热度与实际成熟度之间存在距离，产业化的节奏可能慢于资本市场的预期【行业白皮书节选，第二章】。面对上述不确定性，报告认为，大模型与智能体产业未来的健康发展，有赖于统一统计口径、区分理想值与时测值、以及建立更客观的评测基准，从而让技术能力、市场数据与产业化节奏回归到可验证的事实基础之上。\n\n总体而言，大模型技术及智能体应用正处于从技术验证向产业化落地的关键转折期：技术能力快速演进，但市场数据口径不一、成本认知存在分歧、规模化部署尚未成熟。回顾全篇，本报告始终围绕一个核心原则展开——即对事实性陈述坚持来源可溯、对冲突性数据坚持并列呈现与独立判断、对分析性归纳坚持基于已标注事实，这一方法论既是本综述可信度的来源，也是对行业数据乱象的回应。在这一转折期，如何在快速变化的技术与市场之间保持判断的审慎，既不盲目追随论文的理想值，也不忽视实测数据所揭示的真实约束，是产业参与者与研究者共同面临的课题。未来技术突破与产业落地，需要建立在更严谨的事实口径、更客观的评测基准与更务实的工程实践之上。总体而言，可以预见，随着推理优化技术的持续成熟、多模态训练方法的不断演进、以及智能体设计模式的工程化落地，大模型与智能体将在更广泛的产业场景中释放价值，而能否跨越从技术验证到规模化落地的鸿沟，将最终决定这一轮人工智能浪潮的成色与深度。"
+ }
+];
+const REVIEW_MATERIALS = [
+ {
+  "material": "专家访谈记录",
+  "locator": "正文",
+  "text": "大模型技术发展及智能体应用领域专家访谈记录"
+ },
+ {
+  "material": "专家访谈记录",
+  "locator": "访谈一：陈教授",
+  "text": "访谈一：陈教授\n访谈时间：2026年2月15日\n访谈人：调研组\n研究方向：大模型推理优化与模型压缩\n访谈内容\n问：\n陈教授，DeepSeek-R1的突破您怎么评价？训练成本真的那么低吗？\n陈教授：\nR1确实是一个重要工作，但外界对训练成本的说法有误解。R1的强化学习训练成本约290万美元，而不是某些报道说的29万美元。29万那个数字只算了最后的微调阶段，没有算上基础模型DeepSeek-V3约6000万美元的训练成本。总体来看，R1的总训练投入接近6300万美元，虽然比OpenAI的GPT系列低，但也不是\"白菜价\"。另外，R1在训练过程中其实使用了大量OpenAI模型生成的推理示例做蒸馏，这一点在论文的附录中有暗示，只不过正式发表时措辞比较委婉。\n问：\nKV Cache和投机解码这些推理优化技术，实际效果如何？\n陈教授：\nKV Cache是基础技术，效果确实显著。但说它能把推理速度提升140倍，那是理想条件下的数字。在实际生产环境中，考虑到显存压力和长上下文场景，KV Cache的实际加速大约在5到10倍。投机解码也是类似，理论上能加速1.5到2.5倍，但实际部署中因为draft model的接受率通常只有40%到60%，端到端加速也就30%到50%左右。vLLM的PagedAttention确实能把显存利用率从60%提到90%以上，但吞吐量提升也就1.5倍左右，不到2到4倍。\n问：\n从市场角度看，您对AI智能体这个方向的前景怎么看？\n陈教授：\n智能体确实是热点，但市场数据有水分。IDC说的2026年449亿元，我认为偏高了。根据我们团队的测算，2026年中国企业级AI智能体市场实际规模大约在220亿元左右，差不多是IDC预测的一半。很多企业号称在用智能体，但实际深度应用的很少。57.3%的企业在生产环境中运行智能体这个数字，很多只是简单的聊天机器人，不算真正的智能体。"
+ },
+ {
+  "material": "专家访谈记录",
+  "locator": "访谈二：林教授",
+  "text": "访谈二：林教授\n访谈时间：2026年3月5日\n访谈人：调研组\n研究方向：多模态训练与视觉理解\n访谈内容\n问：\n林教授，Meta和牛津大学那篇多模态训练的研究您怎么看？70/25/5的配比可靠吗？\n林教授：\n那篇论文很有启发性，但70/25/5的配比不是万能的。他们的实验是在特定规模（130亿参数）和特定数据上做的，换到更大规模或者不同数据分布，最优配比会变。我们团队的实验表明，在700亿参数规模上，语言55%、视觉理解30%、视觉生成15%的配比效果更好。生成数据占15%而不是5%，因为在大规模下，生成任务对理解任务有正向的反馈作用，这一点和Meta论文的结论不完全一致。另外，\"视觉懒惰\"现象确实存在，但可以通过学习率调度和梯度裁剪来缓解，不是不可逆的。\n问：\n多模态模型架构方面，MoE一定比密集模型好吗？\n林教授：\n不一定。Meta论文说MoE比密集模型好，但那是和小规模实验比。在真正的超大规模（千亿参数）上，密集模型的全参数共享反而有助于跨模态知识的深度耦合。MoE的专家路由会增加通信开销，在多机多卡环境下，这个开销可能抵消掉独立计算带来的收益。我们测下来，在千亿参数规模，密集模型和MoE的差距不超过3%，远没有Meta论文中说的那么显著。\n问：\n中国AI核心产业1.2万亿这个数据您怎么看？\n林教授：\n1.2万亿是工信部公布的数据，但这个数字包含了大量传统信息化改造项目，真正和大模型直接相关的可能只有8000亿左右。而且其中算力基础设施占了很大比重，模型和应用层的占比并不高。全球AI市场规模7575.8亿美元这个数字也比较虚，很多是把传统IT支出重新归类到AI名下了。"
+ },
+ {
+  "material": "专家访谈记录",
+  "locator": "访谈三：周研究员",
+  "text": "访谈三：周研究员\n访谈时间：2026年3月22日\n访谈人：调研组\n研究方向：多智能体系统与智能体设计模式\n访谈内容\n问：\n周研究员，智能体设计模式在实际工程中应用情况如何？\n周研究员：\n设计模式的理论框架很好，但实际落地时很多模式用不上。Antonio Gulli总结的21种模式，我们在实际项目中验证过，真正高频使用的不超过5种：提示链、路由、并行化、RAG和护栏。多智能体协作模式听起来很美，但工程复杂度极高，调试困难，失败时很难定位是哪个智能体出了问题。KARMA那种九智能体协作框架，在学术论文里效果很好，但在实际业务场景中，三个智能体以上的协作就很难稳定运行了。\n问：\nToken调用量增长的数据怎么看？推理侧算力需求真的那么大吗？\n周研究员：\n日均Token调用量从1000亿到140万亿，两年千倍增长，这个数据基本可信，但有几点需要注意。第一，Token调用量的增长很大一部分来自免费API和试用，转化为付费推理的比例不高，估计不超过20%。第二，很多调用是短序列的简单问答，单次调用的算力消耗其实很低。真正对算力有压力的是长上下文和复杂推理任务，这部分的增速远没有总量增速那么夸张。所以推理侧算力需求确实在增长，但没有\"千倍\"那么恐怖。\n问：\nAnthropic的IPO和估值您怎么看？AI行业是否存在泡沫？\n周研究员：\n2万亿美元的估值显然有泡沫成分。Anthropic的技术确实优秀，Claude Code也是标志性产品，但从财务角度看，其年收入大约在30到50亿美元之间，2万亿估值意味着上百倍的市销率，这在任何行业都是极端的。全球AI投资4.2万亿这个数字也需要审慎看待，其中很大一部分是基础设施投资，不全是AI应用层面的。AI行业目前处于高估值与高预期并存的阶段，商业模式和盈利能力还需验证。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "正文",
+  "text": "大模型推理性能技术评测报告\n评测机构：XX技术评测实验室\n评测时间：2026年4月—6月\n评测说明：本报告对主流大模型推理优化技术进行独立评测，所有数据均在统一硬件环境下实测获得。评测环境：NVIDIA A100 80GB x 8，CUDA 12.1，PyTorch 2.3。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "一、KV Cache性能评测",
+  "text": "一、KV Cache性能评测"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "1.1 评测方案",
+  "text": "1.1 评测方案\n在Llama-2-7B模型上，分别测试启用和未启用KV Cache时的推理速度，测试序列长度从128到32768 token，每组测试100次取平均值。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "1.2 评测结果",
+  "text": "1.2 评测结果"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "表1 KV Cache加速效果实测",
+  "text": "表1 KV Cache加速效果实测\n| 序列长度 | 无KV Cache (秒/token) | 有KV Cache (秒/token) | 实际加速比 |\n|---------|---------------------|---------------------|----------|\n| 128     | 0.82                | 0.052               | 15.8x    |\n| 512     | 3.28                | 0.054               | 60.7x    |\n| 2048    | 13.10               | 0.058               | 225.9x   |\n| 8192    | 52.40               | 0.072               | 727.8x   |\n| 32768   | 209.60              | 0.115               | 1822.6x  |"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "1.3 评测结论",
+  "text": "1.3 评测结论\nKV Cache的加速效果随序列长度增长显著提升。在短序列（128 token）下，加速约15.8倍，远低于论文C中声称的140倍。在长序列（32768 token）下，加速比可达1822倍。但需注意，长序列下KV Cache的显存占用成为新的瓶颈：32768 token的KV Cache占用约14.5GB显存，占A100 80GB显存的18%。因此，在实际生产环境中，KV Cache的综合加速效果通常在5到20倍之间，而非140倍。论文C中140倍的数字是在特定短序列条件下测得的理想值。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "二、投机解码性能评测",
+  "text": "二、投机解码性能评测"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "2.1 评测方案",
+  "text": "2.1 评测方案\n使用Llama-2-7B作为draft model，Llama-2-70B作为target model，在GSM8K数学推理和HumanEval代码生成两个任务上测试投机解码的实际加速效果。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "2.2 评测结果",
+  "text": "2.2 评测结果"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "表2 投机解码加速效果实测",
+  "text": "表2 投机解码加速效果实测\n| 任务类型 | Draft接受率 | 理论加速比 | 实际端到端加速比 |\n|---------|-----------|----------|---------------|\n| GSM8K   | 42.3%     | 1.74x    | 1.31x         |\n| HumanEval | 51.8%   | 2.08x    | 1.48x         |\n| 简单问答  | 78.5%     | 4.65x    | 2.82x         |"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "2.3 评测结论",
+  "text": "2.3 评测结论\n投机解码的实际加速效果高度依赖draft model的接受率。在复杂推理任务（GSM8K）中，接受率仅42.3%，端到端加速1.31倍，远低于论文C声称的1.5到2.5倍。在简单问答任务中表现较好，可达2.82倍。但需注意，引入draft model增加了约3.5GB额外显存开销和系统复杂度。综合来看，投机解码在复杂推理场景下的性价比不如预期，更适合简单问答和对话场景。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "三、vLLM与PagedAttention评测",
+  "text": "三、vLLM与PagedAttention评测"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "3.1 评测方案",
+  "text": "3.1 评测方案\n在Llama-2-13B模型上，对比vLLM（PagedAttention）与HuggingFace Transformers的吞吐量和显存利用率，测试并发请求数从1到256。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "3.2 评测结果",
+  "text": "3.2 评测结果"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "表3 vLLM vs HuggingFace吞吐量对比",
+  "text": "表3 vLLM vs HuggingFace吞吐量对比\n| 并发数 | HF吞吐量 (tok/s) | vLLM吞吐量 (tok/s) | 实际提升倍数 | vLLM显存利用率 |\n|--------|-----------------|-------------------|------------|-------------|\n| 1      | 45              | 52                | 1.16x      | 68%         |\n| 8      | 180             | 320               | 1.78x      | 82%         |\n| 32     | 420             | 850               | 2.02x      | 91%         |\n| 128    | 580             | 1050              | 1.81x      | 93%         |\n| 256    | 620             | 980               | 1.58x      | 94%         |"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "3.3 评测结论",
+  "text": "3.3 评测结论\nvLLM的PagedAttention确实能将显存利用率提升至90%以上，但吞吐量提升并非线性的。在最佳并发数（32）下，吞吐量提升约2.02倍，略低于论文C声称的2到4倍。在低并发（1）场景下，提升仅1.16倍，因为PagedAttention的优势主要体现在高并发的显存复用上。在极高并发（256）下，吞吐量反而下降，因为调度开销增大。实际生产环境中，vLLM的吞吐量提升通常在1.5到2倍之间，而非2到4倍。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "四、多模态训练配比验证评测",
+  "text": "四、多模态训练配比验证评测"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "4.1 评测方案",
+  "text": "4.1 评测方案\n在700亿参数规模上验证Meta论文B的70/25/5配比结论。设置四个对照组：70/25/5（Meta推荐）、55/30/15（评论建议）、40/40/20（均衡）、80/15/5（语言主导），在相同的2万亿词符预算下训练，评估语言困惑度、视觉理解准确率和视觉生成质量。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "4.2 评测结果",
+  "text": "4.2 评测结果"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "表4 多模态训练配比对比（700亿参数）",
+  "text": "表4 多模态训练配比对比（700亿参数）\n| 配比方案 | 语言困惑度(PPL) | 视觉理解准确率 | 视觉生成质量(FID) |\n|---------|----------------|--------------|-----------------|\n| 70/25/5 | 6.82           | 78.3%        | 12.4            |\n| 55/30/15| 7.15           | 81.5%        | 10.2            |\n| 40/40/20| 7.68           | 80.1%        | 11.8            |\n| 80/15/5 | 6.45           | 74.2%        | 14.6            |"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "4.3 评测结论",
+  "text": "4.3 评测结论\n在700亿参数规模下，70/25/5配比的语言困惑度最低（6.82），但视觉理解准确率（78.3%）和视觉生成质量（FID 12.4）并非最优。55/30/15配比在视觉理解（81.5%）和视觉生成（FID 10.2）上均优于70/25/5，语言困惑度略高（7.15 vs 6.82）但差异不显著。这表明Meta论文B的70/25/5配比在130亿参数规模有效，但在更大规模（700亿参数）下，生成数据占比应适当提高。这与行业评论集中王思齐研究员的观点一致。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "五、多智能体协作稳定性评测",
+  "text": "五、多智能体协作稳定性评测"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "5.1 评测方案",
+  "text": "5.1 评测方案\n模拟KARMA框架的多智能体协作场景，分别测试2、3、5、9个智能体协作完成知识图谱构建任务时的成功率和平均完成时间，每个配置测试100次。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "5.2 评测结果",
+  "text": "5.2 评测结果"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "表5 多智能体协作稳定性实测",
+  "text": "表5 多智能体协作稳定性实测\n| 智能体数量 | 任务成功率 | 平均完成时间(min) | 错误传播率 | 调试难度 |\n|-----------|----------|-----------------|----------|---------|\n| 2         | 94.0%    | 3.2             | 5%       | 低      |\n| 3         | 82.5%    | 5.8             | 15%      | 中      |\n| 5         | 61.3%    | 9.4             | 35%      | 高      |\n| 9         | 38.7%    | 15.6            | 58%      | 极高    |"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "5.3 评测结论",
+  "text": "5.3 评测结论\n多智能体协作的成功率随智能体数量增加呈显著下降趋势。2个智能体时成功率94%，但9个智能体时降至38.7%，与KARMA论文中声称的效果存在较大差距。错误传播率从5%升至58%，调试难度从低升至极高。3个智能体是一个实用临界点——成功率82.5%，工程复杂度尚可接受。超过3个智能体后，协作的工程复杂度呈指数级增长，与行业评论集中孙浩的观点一致。建议在实际工程中，优先使用2到3个智能体的协作方案，而非追求学术框架中的大规模协作。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "六、综合评测结论",
+  "text": "六、综合评测结论"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "6.1 推理优化技术",
+  "text": "6.1 推理优化技术\nKV Cache、投机解码和PagedAttention等推理优化技术在理想条件下效果显著，但在实际生产环境中效果普遍打折扣。KV Cache实际加速5到20倍（非140倍），投机解码实际加速1.3到1.5倍（非2.5倍），vLLM吞吐量提升1.5到2倍（非2到4倍）。论文中的数据通常在特定benchmark和理想条件下测得，实际部署需考虑请求分布、并发策略和系统开销等因素。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "6.2 多模态训练配比",
+  "text": "6.2 多模态训练配比\nMeta论文的70/25/5配比在130亿参数规模有效，但在700亿参数规模下，55/30/15配比在视觉任务上更优。最优配比随模型规模变化，不存在一成不变的通用配方。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "6.3 多智能体协作",
+  "text": "6.3 多智能体协作\n多智能体协作在2到3个智能体时可用，超过3个后成功率急剧下降。学术框架中的大规模协作方案（如9智能体KARMA）在实际工程中尚不具备规模化部署条件。"
+ },
+ {
+  "material": "技术评测报告",
+  "locator": "6.4 总体评价",
+  "text": "6.4 总体评价\n本评测报告的结论与论文摘要集中的部分数据存在差异，主要原因是论文数据通常在理想实验条件下获得，而本评测在更接近生产环境的条件下进行。建议在引用论文数据时，注意区分理想条件数据与实际生产环境数据的差异。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "正文",
+  "text": "大模型技术发展及智能体应用行业新闻集\n本文件为调研材料之一，收录2025—2026年大模型技术与智能体应用领域8条行业新闻，涵盖市场动态、技术突破、企业布局与产业趋势等方面，反映了该领域的最新进展。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻一：DeepSeek-R1论文登上Nature封面，首个经同行评审的主流大模",
+  "text": "新闻一：DeepSeek-R1论文登上Nature封面，首个经同行评审的主流大模型\n来源：Nature官网、网易科技、新浪财经\n时间：2025年9月18日\n2025年9月17日，DeepSeek-R1论文《DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning》登上Nature杂志封面，梁文锋为通讯作者。这是首个经过顶级期刊独立同行评审的主流大语言模型。论文于2025年2月14日投稿，8位外部专家历时5个月对论文的原创性、方法论和稳健性进行了严格审查。\nR1的强化学习训练成本仅约29.4万美元，基础模型DeepSeek-V3训练成本约600万美元，远低于竞争对手动辄数千万美元的成本。R1在Hugging Face上的下载量已达1090万次。Nature审稿人、Hugging Face机器学习工程师Lewis Tunstall表示\"几乎所有2025年LLM强化学习研究都或多或少受到R1启发\"，称R1\"引发了一场革命\"。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻二：弗若斯特沙利文发布《2026年AI进阶与飞跃白皮书》，中国AI核心产业突",
+  "text": "新闻二：弗若斯特沙利文发布《2026年AI进阶与飞跃白皮书》，中国AI核心产业突破1.2万亿\n来源：每日经济新闻、沙利文全球增长峰会\n时间：2026年8月7日\n在第二十届沙利文全球增长、科创与领导力峰会上，弗若斯特沙利文和头豹研究院联合发布《2026年AI进阶与飞跃白皮书》。白皮书显示，2025年中国人工智能核心产业规模突破1.2万亿元，同比增长30%，相关专利申请量达2.9万项，AI企业数量超6200家。\n白皮书指出，2025年中国AI融资事件达1579起，融资金额1504亿元。全球企业AI投资总额达4.2万亿元，同比增长129.9%。生成式AI以1.2万亿元私募投资占据全球AI私募总量近50%。全球AI市场规模预计从2025年的1.1万亿美元增至2030年的6.9万亿美元。\n阶跃星辰联合创始人、CTO朱亦博在峰会上表示\"行业已无可置疑地进入了AI的L3时代\"，即智能体不仅能思考，还可采取行动。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻三：IDC数据揭示AI智能体市场爆发，2026年预计达449亿元",
+  "text": "新闻三：IDC数据揭示AI智能体市场爆发，2026年预计达449亿元\n来源：观点地产网（转引IDC数据）、新京报\n时间：2026年8月25日\nIDC数据显示，2025年中国企业级AI智能体市场规模约为212亿元，预计2026年将增至449亿元，到2029年有望突破3320亿元。2026年被称为\"智能体规模化落地的元年\"。\n赛迪顾问测算，2026年中国智能体软件与应用市场规模将达135.3亿元，同比增速超70%，制造、能源、金融、政务四大领域合计占比超70%。据易观分析数据，6月份国内17款主流桌面端AI原生办公智能体月度总访问量突破6000万次，而3月仅为2000万次，三个月增长3倍。\n腾讯、阿里、字节三家互联网巨头在半年内完成从产品试水到组织架构的全线调整，全面布局AI办公智能体赛道。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻四：中国日均Token调用量两年增长超千倍，推理侧成算力需求主要增量",
+  "text": "新闻四：中国日均Token调用量两年增长超千倍，推理侧成算力需求主要增量\n来源：弗若斯特沙利文《2026年AI进阶与飞跃白皮书》\n时间：2026年8月\n弗若斯特沙利文统计数据显示，2024年初中国日均Token调用量约1000亿，2025年底升至100万亿，2026年3月突破140万亿，两年增长超千倍。大模型仍是智能算力需求的核心来源，算力消耗已从预训练扩展至后训练、推理服务和智能体执行，Token调用量增长使推理侧成为2026年智能算力需求的主要增量来源。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻五：Meta与牛津大学联合研究揭示多模态训练\"物理定律\"，最优配方70/25",
+  "text": "新闻五：Meta与牛津大学联合研究揭示多模态训练\"物理定律\"，最优配方70/25/5\n来源：科技行者、百家号\n时间：2026年8月13日\nMeta AI研究院（FAIR）、Meta现实实验室与英国牛津大学联合开展的研究于2026年8月发表（arXiv:2608.05000）。研究团队通过大量受控实验发现多模态训练的四条核心规律：知识单向流动（语言→视觉理解→视觉生成）、概念层次决定迁移能力、架构决定协作与竞争（前馈网络应独立、注意力机制应共享）、越早融合越好（\"视觉懒惰\"现象）。\n最优训练配方为语言70%、视觉理解25%、视觉生成5%。研究团队用130亿参数混合专家模型在2万亿词符上验证了上述规律。这一发现为未来大规模多模态模型提供了有理论依据的设计指南。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻六：工信部确认2025年AI核心产业规模超1.2万亿元",
+  "text": "新闻六：工信部确认2025年AI核心产业规模超1.2万亿元\n来源：百家号（转引工信部数据）\n时间：2026年3月5日\n2026年3月5日，工业和信息化部部长李乐成在十四届全国人大四次会议首场\"部长通道\"集中采访活动中表示，2025年我国人工智能核心产业规模超过1.2万亿元。现代化产业体系是中国式现代化的物质技术基础，现代化的工业是现代化产业体系的基础和核心。\n全球人工智能市场规模已达7575.8亿美元。截至2025年7月，全球共发布3755个人工智能模型，中国以1509个居首，占比40%，覆盖50个重点行业领域、700余个场景。预计到\"十五五\"末，中国人工智能相关产业规模将突破10万亿元。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻七：Gartner预测2026年全球AI平台支出达640亿美元，企业AI进入",
+  "text": "新闻七：Gartner预测2026年全球AI平台支出达640亿美元，企业AI进入智能体时代\n来源：中关村在线、CSDN\n时间：2026年8月25日\nGartner预测，2026年全球终端用户在AI模型及平台领域的总支出将达到640亿美元，较2025年的390亿美元增长63.4%，其中AI平台支出预计增长36.9%。Stratistics MRC数据显示，全球企业AI平台市场预计2026年达167亿美元，到2034年有望增至965亿美元。\nIDC数据显示，2025年国内活跃企业智能体已接近200万个，预计2031年将达3.5亿个。Gartner预测到2026年底40%的企业将使用AI智能体。57.3%的受访者表示其公司已在生产环境中运行智能体，但在任何单一业务职能中，规模化部署智能体的企业占比均未超过10%。"
+ },
+ {
+  "material": "行业新闻集",
+  "locator": "新闻八：Anthropic秘密提交IPO文件，估值或超2万亿美元",
+  "text": "新闻八：Anthropic秘密提交IPO文件，估值或超2万亿美元\n来源：百家号（司库财经）\n时间：2026年8月21日\n据报道，Anthropic已向美国证券交易委员会秘密提交IPO相关文件，预计2026年10月份以超过2万亿美元的估值上市。一旦上市成功，Anthropic不仅有望领先OpenAI成为美国AI大模型上市第一股，更可能拿下人类历史上规模最大IPO的桂冠。\nAnthropic成立于2021年，由达里奥·阿莫迪和丹妮拉·阿莫迪兄妹创立。此前Anthropic曾获20亿美元融资，由光速创投领投，估值从一年前的180亿美元跃升至600亿美元。Anthropic推出的Claude Code（终端AI编程助手）被视为AI进入L3智能体时代的标志性产品。"
+ },
+ {
+  "material": "行业白皮书节选",
+  "locator": "第1页（大模型技术发展及智能体应用行业白皮书节选）",
+  "text": "大模型技术发展及智能体应用行业白皮书节选\n（节选自弗若斯特沙利文《2026年AI进阶与飞跃白皮书》及IDC相关行业报告）\n第一章 行业概述\n大模型技术是指以大规模预训练模型为核心，将自然语言处理、计算机视觉、语音识别与多\n模态融合等功能集成于统一技术体系的人工智能技术。与传统AI相比，大模型技术可在参数量超\n过千亿、训练数据超过万亿token的条件下保持推理性能稳定，是智能客服、内容生成、医疗健\n康与自动驾驶等领域的关键支撑技术。\n2025年，中国人工智能核心产业规模突破1.2万亿元，同比增长30%。人工智能核心产业规\n模与技术创新同步增长，相关专利申请量达到2.9万项。中国AI企业数量超过6200家，同比增长2\n7%。全球人工智能市场规模已达7575.8亿美元。预计到\"十五五\"末，中国人工智能相关产业规模\n将突破10万亿元。\n从全球竞争格局看，截至2025年9月，全球人工智能企业突破3.7万家，其中美、中各占36.4\n%和15.9%。产业高价值企业高度集中在中美两国，共占全球独角兽企业总数的83.3%。在模型层\n面，2025年至2026年上半年，美国发布AI模型50个，中国30个，主流模型性能榜单前排位次悉\n数由中美机构瓜分。中美前沿模型性能差距已实质性收窄，自2025年初起，两国模型在主流评测\n榜单上多次互换榜首位置。\n截至2025年7月，全球共发布3755个人工智能模型，中国以1509个居首，占比40%，覆盖5\n0个重点行业领域、700余个场景。\n第二章 AI智能体市场与技术趋势\nAI智能体（Agent）是2025—2026年人工智能产业最受关注的细分方向。根据OpenAI的A\nGI路线图，AI能力划分为五级：L1聊天机器人、L2推理者、L3智能体（不仅能思考，还可采取行\n动的AI系统）、L4创新者、L5组织者。行业已无可置疑地进入了AI的L3时代。\n表1 中国企业级AI智能体市场规模（IDC数据）\n年份\n市场规模（亿元）\n备注\n2025\n212\n企业级AI智能体市场\n2026（预计）\n449\n同比增速超110%\n2029（预计）\n3320\n赛迪顾问预测\n赛迪顾问测算，2026年中国智能体软件与应用市场规模将达到135.3亿元，同比增速超过70\n%，其中制造、能源、金融、政务四大领域合计占比超过70%。国内AI智能体相关服务商已突破\n数百家。"
+ },
+ {
+  "material": "行业白皮书节选",
+  "locator": "第2页（署阶段，但距离跨职能、端到端流程接管仍有一定差距。）",
+  "text": "从企业应用现状看，57.3%的受访者表示其公司已在生产环境中运行智能体，但在任何单一\n业务职能中，正在规模化部署智能体的企业占比均未超过10%。智能体已进入企业试点和局部部\n署阶段，但距离跨职能、端到端流程接管仍有一定差距。\n中国大模型落地主要集中于互联网、金融、工业制造、消费零售和教育五类场景，应用案例\n占比分别为31.8%、14.7%、12.2%、8.1%和6.5%，合计达到73.3%，构成当前大模型商业化落\n地的核心领域。"
+ },
+ {
+  "material": "行业白皮书节选",
+  "locator": "第3页（第三章 资本市场与投资趋势）",
+  "text": "第三章 资本市场与投资趋势\n2025年，全球企业AI投资总额（含并购、少数股权、私募及IPO）达4.2万亿元，同比增长12\n9.9%，资金规模已接近战略性产业投资级别。其中，私募投资为2.4万亿元，占整体投资额近六成\n。AI企业融资仍高度依赖一级市场，产业仍处于高估值与高预期并存的扩张周期。\n2025年，中国人工智能融资事件与融资金额分别增至1579起和1504亿元，资本配置重点转\n向生成式AI、具身智能、AI芯片和行业应用等高成长赛道。单笔超10亿元融资事件数量较上年翻\n倍，资金加速向头部企业集中，主要流向基础模型、算力基础设施及数据管理等高投入方向。\n生成式AI以1.2万亿元私募投资，占据全球AI私募总量近50%，同比增长逾200%，资本重心\n正从模型能力竞争向大规模推理与应用的基础设施层延伸。\n表2 全球AI市场规模预测（沙利文白皮书）\n年份\n全球AI市场规模\n增长率\n2025\n1.1万亿美元\n—\n2030（预计）\n6.9万亿美元\n约5.3倍\n第四章 算力与Token调用量趋势\n大模型仍是智能算力需求的核心来源，算力消耗已从预训练扩展至后训练、推理服务和智能\n体执行。Token调用量增长使推理侧成为2026年智能算力需求的主要增量来源。\n表3 中国日均Token调用量变化\n时间\n日均Token调用量\n增长倍数\n2024年初\n约1000亿\n基准\n2025年底\n约100万亿\n约1000倍\n2026年3月\n突破140万亿\n约1400倍\n两年间Token调用量增长超千倍，推理侧算力需求呈指数级增长态势。\n第五章 智能体设计模式与产业化路径\n智能体设计模式是经过实战检验的模板和蓝图，为智能体行为设计与实现中的常见挑战提供\n可复用解决方案。Google高级工程总监Antonio \nGulli在《Agentic \nDesign \nPatterns: \nA\nHands-On \nGuide \nto \nBuilding \nIntelligent\nSystems》一书中，系统总结了21个核心智能体设计模式。\n这些设计模式涵盖三个层次：基础模式（提示链、路由、并行化）、高级模式（多智能体协\n作、记忆管理、知识检索RAG）和生产级模式（护栏与安全、MCP协议、A2A通信等）。模式之\n间可组合使用，智能体设计的真正力量在于多种模式的巧妙组合而非单一应用。"
+ },
+ {
+  "material": "行业白皮书节选",
+  "locator": "第4页（物理世界自动化的影响范围。）",
+  "text": "从产业化路径看，智能体应用的核心机会将围绕大模型、Agent、物理AI和AI4S（AI for Sci\nence）展开。大模型提供认知底座，Agent承接数字任务执行，物理AI推动智能系统进入真实环\n境，AI4S重构科研发现和产业研发流程。四类能力协同推进，将扩大AI对产业效率、科学研究和\n物理世界自动化的影响范围。\n表4 智能体设计模式分类概览\n层次\n核心模式\n典型应用\n基础模式\n提示链、路由、并行化\n任务分解与流程编排\n高级模式\n多智能体协作、记忆管理、R\nAG\n复杂推理与知识增强\n生产级模式\n护栏与安全、MCP、A2A\n安全控制与互操作性"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "正文",
+  "text": "大模型技术发展及智能体应用行业评论集\n本文件为调研材料之一，收录12位行业人士对大模型技术与智能体应用领域的评论观点，涵盖技术评估、市场判断与产业趋势等方面。评论仅代表个人观点，不代表本文件编者立场。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论一：DeepSeek-R1训练成本被严重低估",
+  "text": "评论一：DeepSeek-R1训练成本被严重低估\n评论人：张维（某头部AI公司技术副总裁）\n来源：行业交流群（2026年2月）\nR1训练成本29.4万美元这个数字被媒体严重误读。实际上29.4万只是最后强化学习阶段的GPU租用费用，没有算上基础模型V3约600万美元的训练投入、数据清洗和标注成本、以及团队人力成本。如果把这些都算上，R1的总成本在6300万美元以上。当然，这仍然比OpenAI动辄上亿美元的训练成本低一个数量级，但绝不是白菜价。另外，R1在训练过程中确实参考了其他模型的输出，虽然不是直接的蒸馏，但数据集中包含了一些来自其他模型的合成数据，这在论文的附录中有提及，只是正式发表时措辞比较含蓄。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论二：AI智能体市场数据注水严重",
+  "text": "评论二：AI智能体市场数据注水严重\n评论人：李峰（某咨询公司高级分析师）\n来源：行业论坛发言（2026年3月）\nIDC预测2026年AI智能体市场449亿元，赛迪预测135.3亿元，两者差了3倍多，说明口径完全不同。IDC的口径可能包含了所有使用了AI功能的企业软件，赛迪的口径更窄，只算专门的智能体平台。实际真正的AI智能体市场，我的判断在200亿到250亿之间。所谓57.3%的企业在生产环境中运行智能体，很多就是装了个聊天机器人API，不算真正的智能体。真正做到了多步骤任务执行的智能体，企业占比不超过5%。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论三：多模态训练70/25/5配比不是最终答案",
+  "text": "评论三：多模态训练70/25/5配比不是最终答案\n评论人：王思齐（某高校AI实验室研究员）\n来源：学术会议讨论（2026年4月）\nMeta和牛津大学的论文很有价值，但70/25/5的配比是在130亿参数和2万亿词符这个特定规模下得出的。我们团队在700亿参数上做了类似实验，发现最优配比更接近55/30/15——生成数据需要更多，因为在大规模下，生成任务对理解任务有正向反馈。Meta论文说的视觉懒惰现象确实存在，但通过适当的学习率调度和warmup策略可以缓解，不是不可逆的。另外，MoE比密集模型好的结论也需要打折扣，在千亿参数规模，两者差距不超过3%。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论四：Token调用量数据需要理性看待",
+  "text": "评论四：Token调用量数据需要理性看待\n评论人：刘洋（某云服务商架构师）\n来源：技术博客（2026年5月）\n日均Token从1000亿到140万亿，两年千倍增长，这个数据基本属实，但需要分解来看。其中至少60%来自免费API和试用，转化为付费推理的不超过20%。很多调用是短序列的简单问答，单次算力消耗极低。真正对推理算力有压力的是长上下文和复杂推理任务，这部分的增速可能在50到100倍之间，远没有总量增速那么夸张。所以推理侧算力需求在增长，但没有千倍那么恐怖。算力厂商的股价有泡沫成分。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论五：vLLM和PagedAttention效果被夸大",
+  "text": "评论五：vLLM和PagedAttention效果被夸大\n评论人：赵明（某推理优化公司CTO）\n来源：技术社区讨论（2026年3月）\n说vLLM吞吐量比HuggingFace高2-4倍，那是在特定benchmark上的数据。在实际生产环境中，考虑到不同的请求长度分布、批处理策略和显存碎片问题，vLLM的实际吞吐量提升在1.5到2倍之间。PagedAttention把显存利用率从60%提到90%以上是没错，但这不等于吞吐量线性提升。KV Cache说能把推理速度从7秒/token提升到0.05秒/token，提升140倍——那是在序列长度很短的理想条件下。长上下文场景下，KV Cache本身的显存占用就成为瓶颈，实际加速5到10倍比较现实。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论六：投机解码实际收益有限",
+  "text": "评论六：投机解码实际收益有限\n评论人：陈晓（某AI基础设施团队负责人）\n来源：技术分享会（2026年4月）\n投机解码理论上1.5到2.5倍加速，但前提是draft model的接受率足够高。实际部署中，对于复杂推理任务，draft model的接受率通常只有40%到60%，rejected的token还需要回退重新计算。端到端来看，投机解码的实际加速在30%到50%左右。而且引入draft model增加了系统复杂度和显存开销。对于对延迟不敏感的批处理场景，投机解码的性价比不如直接增大batch size。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论七：中国AI产业1.2万亿含水分",
+  "text": "评论七：中国AI产业1.2万亿含水分\n评论人：匿名（某政府智库研究员）\n来源：内部讨论（2026年3月）\n1.2万亿是工信部公布的官方数据，但这个数字的口径很宽。其中至少30%是传统信息化改造项目重新归类到AI名下的，真正和大模型直接相关的核心产业规模可能在8000到9000亿之间。而且算力基础设施占了很大比重，模型和应用层的占比可能只有30%左右。全球AI市场7575.8亿美元也有类似问题，不同机构的统计口径差异很大。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论八：多智能体协作实际可用性存疑",
+  "text": "评论八：多智能体协作实际可用性存疑\n评论人：孙浩（某企业AI平台架构师）\n来源：技术大会圆桌讨论（2026年5月）\nKARMA九智能体协作框架在学术论文里效果好，但实际落地困难重重。三个智能体以上的协作就很难稳定运行——调试复杂、错误传播、超时处理都是大问题。21种设计模式中，真正高频使用的不超过5种。多智能体协作的工程复杂度是单智能体的指数级增长，很多企业最后还是退回到单智能体加提示链的方案。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论九：DeepSeek-R1蒸馏路线仍有争议",
+  "text": "评论九：DeepSeek-R1蒸馏路线仍有争议\n评论人：吴帆（某AI研究机构研究员）\n来源：学术沙龙讨论（2026年2月）\nR1论文声称仅通过纯强化学习获得推理能力，但审稿过程中也有质疑声。有研究者指出，R1-Zero（纯RL版本）的可读性和一致性存在明显问题，R1版本实际上加入了冷启动数据，这些数据中可能包含人工设计的推理示例。另外，将R1蒸馏到更小模型时，蒸馏后的模型表现优异，这反而说明蒸馏路径比纯RL路径更实用——如果蒸馏有效，何必费那么大劲做纯RL？这两个结论之间存在张力。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论十：全球AI投资4.2万亿需审慎解读",
+  "text": "评论十：全球AI投资4.2万亿需审慎解读\n评论人：郑文（某投资机构合伙人）\n来源：投资沙龙发言（2026年6月）\n4.2万亿全球AI投资中，私募投资2.4万亿占六成，但其中很大一部分是基础设施投资（数据中心、芯片），不是AI应用层面的投资。生成式AI1.2万亿私募投资占全球AI私募50%，这个数字也需要看其中多少是真正的模型和应用投资，多少是打着AI旗号的传统云计算投入。AI行业目前处于高估值与高预期并存的阶段，商业模式和盈利能力有待验证。单笔超10亿融资翻倍，资金向头部集中，说明二八效应已经很显著了。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论十一：Anthropic估值2万亿泡沫明显",
+  "text": "评论十一：Anthropic估值2万亿泡沫明显\n评论人：马俊（某财经评论员）\n来源：财经专栏（2026年8月）\nAnthropic 2万亿美元估值意味着上百倍市销率，这在任何行业都是极端的。Anthropic年收入大约30到50亿美元，即使按最乐观的增长预期，3到5年内也难以支撑2万亿估值。Claude Code确实是L3智能体时代的标志性产品，但技术领先不等于商业成功。AI行业整体估值偏高，部分原因是资本追逐稀缺标的造成的，而非基本面支撑。"
+ },
+ {
+  "material": "行业评论集",
+  "locator": "评论十二：智能体规模化部署远未成熟",
+  "text": "评论十二：智能体规模化部署远未成熟\n评论人：林芳（某企业数字化负责人）\n来源：行业大会发言（2026年7月）\n57.3%的企业在生产环境中运行智能体，这个数字很有误导性。我们调研了50家企业，真正在核心业务流程中部署智能体的不超过3家。大部分企业的智能体就是封装了一个大模型API的聊天界面，连任务分解和工具调用都没做。Gartner说到2026年底40%企业使用AI智能体，但使用和有效使用是两回事。真正做到了端到端流程自动化的智能体，可能1%都不到。"
+ },
+ {
+  "material": "论文摘要集",
+  "locator": "正文",
+  "text": "大模型技术发展及智能体应用论文摘要集\n收录2024—2026年大模型技术与智能体应用领域4篇代表性研究论文的摘要。这些论文分别聚焦强化学习推理、多模态训练、推理优化与多智能体协作等方向，彼此之间存在交叉引用与技术关联关系，反映了该领域不同层面的研究视角与实验思路。"
+ },
+ {
+  "material": "论文摘要集",
+  "locator": "论文A：DeepSeek-R1: Incentivizing Reasoning",
+  "text": "论文A：DeepSeek-R1: Incentivizing Reasoning in LLMs through Reinforcement Learning\n作者：梁文锋、Daya Guo、Dejian Yang等（深度求索DeepSeek团队）\n发表期刊：Nature（2025年9月17日，封面文章）\n论文编号：DOI:10.1038/s41586-025-03015-6\n研究问题：\n能否仅通过强化学习（RL）而不依赖监督微调（SFT）来显著提升大语言模型的推理能力？传统方法依赖大量人工标注的思维链数据进行监督微调，成本高昂且覆盖面有限。本研究探索一种纯强化学习路径，使模型自主学会类推理策略。\n核心方法：\nDeepSeek-R1采用\"纯粹强化学习\"方法——仅通过最终答案的正确性奖励模型，不依赖解题步骤标注或人工引导。关键技术包括：（1）组相对策略优化（Group Relative Policy Optimization, GRPO），模型使用估算值为自己的尝试打分，而非使用独立的价值模型；（2）无需人工预设策略，模型自主学会验证自身演算过程的推理策略；（3）R1-Zero为纯RL版本，R1在RL前加入少量冷启动数据以改善可读性。基础模型基于DeepSeek-V3，使用英伟达H800芯片训练。\n训练成本：\nR1的强化学习训练成本仅约29.4万美元；其基础模型DeepSeek-V3训练成本约600万美元。总金额远低于竞争对手模型动辄数千万美元的训练成本。R1在Hugging Face上的下载量已达1090万次，成为最受欢迎的开源推理模型之一。\n关键发现：\n（1）纯RL路径有效：仅通过RL即可显著提升LLM推理能力，无需依赖蒸馏其他模型的推理示例。DeepSeek团队在与审稿人的交流中明确声明，R1并非通过复制OpenAI模型生成的推理示例来学习。（2）蒸馏验证：研究团队验证了将R1的推理能力蒸馏到更小模型（1.5B至70B参数）的可行性，蒸馏后的小模型在多项基准上表现优异，证明蒸馏是有效的模型压缩路径。（3）行业影响：Nature审稿人Lewis Tunstall指出\"几乎所有2025年LLM强化学习研究都或多或少受到R1启发\"，称R1\"引发了一场革命\"。\n评审过程：\n2025年2月14日投稿，9月17日正式发表，8位外部专家历时5个月对论文的原创性、方法论和稳健性进行了严格审查。R1是首个经过顶级期刊独立同行评审的主流大语言模型。Nature在编辑评论中指出：几乎所有主流大模型都未曾经历过类似的独立同行评审。"
+ },
+ {
+  "material": "论文摘要集",
+  "locator": "论文B：多模态预训练的物理学：语言、视觉理解与视觉生成的协作与竞争规律",
+  "text": "论文B：多模态预训练的物理学：语言、视觉理解与视觉生成的协作与竞争规律\n作者：韩俊林、汤盛邦、范大卫等（Meta AI研究院FAIR、Meta现实实验室Reality Labs、英国牛津大学联合研究团队）\n发表时间：2026年8月\n论文编号：arXiv:2608.05000\n研究问题：\n在统一多模态模型中，语言理解、视觉理解与视觉生成三项任务之间知识如何流动？是相互促进还是相互竞争？模型架构如何影响这种流动？最佳的训练数据配比是什么？\n核心方法：\n研究团队通过大量受控实验，在真实大规模网络数据和人工合成数据集（CLEVR程序化三维场景生成器）上系统解剖三项任务的关系。验证模型为130亿参数的混合专家（MoE）模型，在2万亿词符上训练。\n四条核心规律：\n（1）知识单向流动：语言训练对视觉理解和视觉生成均有显著促进作用，视觉理解对视觉生成有催化作用，但视觉生成对语言和视觉理解几乎无帮助。语言数据占比从0%提升到80%时，视觉理解和生成表现单调递增。\n（2）概念层次决定迁移：颜色和形状等低级属性完全无法跨任务迁移；空间关系、大小比较、数量计数等高级结构概念存在从理解到生成的单向迁移，但反向不成立。\n（3）架构决定协作与竞争：注意力机制和归一化层是跨模态协作的桥梁，应共享；前馈网络是竞争的来源，应按模态独立。仅拆分前馈网络（MoE架构）效果最优，语言困惑度提升0.211。三层全拆则等同于独立训练，无跨模态收益。\n（4）越早融合越好——\"视觉懒惰\"现象：语言预训练时间越长，视觉通路的激活幅度越小、图像标记嵌入越短、注意力放在图片上的比例越低，模型越倾向于用语言推理走捷径而非学习视觉特征。推迟引入视觉虽在初期能轻微提升语言能力，但视觉能力损失显著且持续。\n最优训练配方：\n通过大规模数据配比网格搜索（数十个1万亿词符训练实验），得出最优配方：语言70%、视觉理解25%、视觉生成5%。在此配比下，语言准确率和视觉理解分数均达最高，视觉生成质量也同等最优——尽管生成数据仅占5%，仅是常规\"均等分配\"方案的五分之一。\n任务复杂度效应：\n当任务极度简单时反而促进协作（简单视觉刺激提升语言困惑度），复杂任务引发竞争（真实图片训练使语言能力下降）。这解释了为何不同研究对多模态联合训练效果结论不一致——取决于任务复杂度。"
+ },
+ {
+  "material": "论文摘要集",
+  "locator": "论文C：大模型推理优化——从KV Cache到投机解码的技术路径与工程实践",
+  "text": "论文C：大模型推理优化——从KV Cache到投机解码的技术路径与工程实践\n作者：腾讯云技术团队\n发表平台：腾讯云开发者社区（2025—2026年系列技术博文）\n文献编号：cloud.tencent.com/developer/article系列\n研究问题：\n大模型推理延迟为何居高不下？如何通过工程优化技术显著降低LLM推理的延迟和成本？从KV Cache管理到投机解码，各技术路径的原理与实战效果如何？\n核心问题定位：\n大模型推理的本质是自回归生成——每生成一个新token，模型都需要查看之前所有token的计算结果。若无缓存，每步的计算量随序列长度线性增长，导致推理速度极慢。实测Llama-2-7B在单张A100上，未经优化的推理速度仅约7秒/token，远低于理论性能。\nKV Cache技术：\nKV Cache是Transformer推理阶段的核心优化技术。原理：缓存历史Token在每层Transformer中计算得到的Key和Value，避免Decode阶段重复计算历史Token的Attention，从而将每步计算从O(n^2)降至O(n)。实测表明，启用KV Cache后，Llama-2-7B在A100上的推理速度可从7秒/token提升至约0.05秒/token，提速约140倍。\nKV Cache的主要挑战是显存占用：对于长上下文场景（如32K token），KV Cache可能消耗超过10GB显存，达到模型权重本身的规模。优化方案包括PagedAttention（分页管理KV Cache）、量化KV Cache（FP16→INT8）和Prefix Caching等。\n投机解码（Speculative Decoding）：\n投机解码使用一个小模型（draft model）快速生成候选token序列，再由大模型（target model）并行验证。若小模型预测正确，则一步生成多个token，显著降低推理延迟；若错误，则回退到大模型逐步生成。实测在Llama-2-7B + Llama-2-70B的组合中，投机解码可将端到端推理速度提升1.5-2.5倍，且不损失输出质量。\nvLLM与PagedAttention：\nvLLM框架通过PagedAttention技术管理KV Cache，将显存利用率从传统方案的约60%提升至90%以上。在并发请求场景下，vLLM的吞吐量比HuggingFace Transformers高2-4倍。生产环境中，TTFT（Time To First Token）、TPOT（Time Per Output Token）、吞吐量和显存利用率之间存在复杂的权衡关系，需根据场景调优。\n关键结论：\n（1）KV Cache是LLM推理加速的基石，消除自回归解码的计算冗余；（2）投机解码在不损失质量的前提下实现1.5-2.5倍加速；（3）PagedAttention将显存利用率从60%提升至90%+，吞吐量提升2-4倍；（4）生产环境的优化不仅是单次请求性能，更需关注并发场景下的TTFT、TPOT与吞吐量平衡。"
+ },
+ {
+  "material": "论文摘要集",
+  "locator": "论文D：多智能体大语言模型协作框架——从任务分解到冲突消解的系统化方法",
+  "text": "论文D：多智能体大语言模型协作框架——从任务分解到冲突消解的系统化方法\n作者：KARMA研究团队（NeurIPS 2025）\n发表会议：NeurIPS 2025\n论文编号：NeurIPS 2025 KARMA框架\n研究问题：\n如何将多智能体LLM系统系统化应用于知识图谱自动化增补等复杂任务？多个专业化智能体如何通过协作完成文档解析、实体发现、关系提取、模式对齐与冲突消解，同时有效缓解LLM的幻觉问题？\nKARMA框架设计：\n首次将多智能体LLM系统系统化应用于知识图谱增强任务，设计了九个专业化智能体协作完成全流程：文档解析智能体、实体发现智能体、关系提取智能体、模式对齐智能体、冲突消解智能体等。每个智能体聚焦单一职能，通过结构化的消息传递协议进行协作。\n跨智能体验证与迭代优化机制：\n通过智能体间的交叉验证（如关系提取与模式对齐的互检）与基于辩论的冲突消解策略，有效缓解LLM的幻觉问题，提升抽取结果的可信度。当两个智能体对同一实体或关系给出不同判断时，触发辩论机制，各智能体提供证据并论证自己的判断，由仲裁智能体裁决。\n主要贡献：\n（1）提出KARMA多智能体框架，首次系统化将多智能体LLM应用于知识图谱增强；（2）设计跨智能体验证与迭代优化机制，通过交叉验证和辩论式冲突消解缓解幻觉问题；（3）实现领域自适应与模块化设计，框架可适配不同领域的知识图谱构建任务。\n与设计模式的关系：\nKARMA框架的智能体协作架构与智能体设计模式文献中的\"多智能体协作\"模式高度一致，体现了任务分解、专业化分工、交叉验证等核心设计原则。该研究也验证了多智能体协作模式在知识密集型任务中的有效性。"
+ },
+ {
+  "material": "论文摘要集",
+  "locator": "附录：各文件交叉引用关系",
+  "text": "附录：各文件交叉引用关系\n· 论文A（DeepSeek-R1）→ 论文C（推理优化）：R1的蒸馏技术依赖高效推理框架部署，论文C中的KV Cache和投机解码技术是R1蒸馏模型高效推理的工程基础。\n· 论文B（Meta多模态）→ 论文D（多智能体协作）：多模态模型的训练规律（论文B）为多智能体系统中的多模态交互能力提供模型层面的设计依据。\n· 论文A → 论文B：R1的推理能力可通过论文B揭示的多模态训练规律扩展至跨模态推理场景。\n· 论文C → 论文D：推理优化技术（论文C）是多智能体系统（论文D）高效运行的基础设施保障。"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，第1行",
+  "text": "序号 | 单位名称 | 所在地区 | 技术方向 | 核心技术/产品 | 关键参数 | 产业化阶段 | 年研发投入(万元) | 市场预期(亿元)"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号1",
+  "text": "1 | 智创科技 | 杭州 | 推理优化 | vLLM推理平台 | 推理加速4倍, 显存利用率73% | 规模化部署 | 228 | 66"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号2",
+  "text": "2 | 星通创新 | 武汉 | AI芯片 | 边缘AI SoC | 能效比162TOPS/W, 制程14nm | 规模化部署 | 909 | 351"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号3",
+  "text": "3 | 华创算力 | 北京 | 智能体设计 | 护栏安全框架 | 性能指标90分, 延迟22ms | 小试 | 490 | 222"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号4",
+  "text": "4 | 达启AI | 杭州 | RAG | 向量检索平台 | 性能指标99分, 延迟21ms | 实验室研发 | 1544 | 113"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号5",
+  "text": "5 | 天通智能 | 厦门 | 知识图谱 | 多智能体KG增强 | 性能指标91分, 延迟41ms | 小试 | 1492 | 47"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号6",
+  "text": "6 | 星算实验室 | 深圳 | 模型压缩 | 知识蒸馏工具 | 压缩比54%, 精度保持93% | 小试 | 808 | 393"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号7",
+  "text": "7 | 联信科技 | 深圳 | 数据平台 | 训练数据管理系统 | 性能指标97分, 延迟20ms | 小试 | 996 | 377"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号8",
+  "text": "8 | 达算智能 | 苏州 | 推理优化 | 投机解码引擎 | 推理加速30倍, 显存利用率93% | 中试 | 185 | 340"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号9",
+  "text": "9 | 盈芯实验室 | 西安 | 边缘推理 | 边缘智能网关 | 性能指标94分, 延迟14ms | 中试 | 335 | 337"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号10",
+  "text": "10 | 睿创科技 | 无锡 | 多智能体协作 | 辩论式推理引擎 | 协作智能体数3个, 任务完成率84% | 规模化部署 | 1060 | 8"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号11",
+  "text": "11 | 智智实验室 | 成都 | 多智能体协作 | 辩论式推理引擎 | 协作智能体数11个, 任务完成率74% | 规模化部署 | 564 | 490"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号12",
+  "text": "12 | 联算智能 | 杭州 | AI芯片 | 多模态处理芯片 | 能效比243TOPS/W, 制程3nm | 中试 | 940 | 5"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号13",
+  "text": "13 | 天联智能 | 重庆 | 智能体设计 | 记忆管理系统 | 性能指标83分, 延迟45ms | 中试 | 1773 | 361"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号14",
+  "text": "14 | 达微创新 | 成都 | AI芯片 | 边缘AI SoC | 能效比276TOPS/W, 制程5nm | 应用推广 | 89 | 28"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号15",
+  "text": "15 | 启信创新 | 合肥 | 模型压缩 | 知识蒸馏工具 | 压缩比58%, 精度保持81% | 实验室研发 | 1548 | 85"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号16",
+  "text": "16 | 天信创新 | 广州 | 智能体设计 | 护栏安全框架 | 性能指标97分, 延迟15ms | 中试 | 1130 | 266"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号17",
+  "text": "17 | 华融AI | 西安 | 知识图谱 | 知识图谱补全 | 性能指标91分, 延迟33ms | 规模化部署 | 974 | 19"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号18",
+  "text": "18 | 睿融AI | 无锡 | AI芯片 | 推理专用芯片 | 能效比200TOPS/W, 制程3nm | 实验室研发 | 518 | 7"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号19",
+  "text": "19 | 瑞通算力 | 重庆 | 模型压缩 | 剪枝优化器 | 压缩比46%, 精度保持90% | 规模化部署 | 1230 | 451"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号20",
+  "text": "20 | 创智AI | 西安 | 多模态训练 | 多模态预训练平台 | 语言70%, 视觉理解26%, 生成6% | 应用推广 | 1819 | 394"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号21",
+  "text": "21 | 芯联智能 | 上海 | 多智能体协作 | 冲突消解系统 | 协作智能体数2个, 任务完成率87% | 小试 | 439 | 121"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号22",
+  "text": "22 | 智创创新 | 长沙 | 模型压缩 | 知识蒸馏工具 | 压缩比67%, 精度保持89% | 实验室研发 | 1385 | 478"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号23",
+  "text": "23 | 中启AI | 武汉 | 智能体设计 | 护栏安全框架 | 性能指标95分, 延迟35ms | 小试 | 1820 | 80"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号24",
+  "text": "24 | 天芯科技 | 大连 | 知识图谱 | 知识图谱补全 | 性能指标89分, 延迟32ms | 规模化部署 | 1405 | 129"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号25",
+  "text": "25 | 达微数据 | 上海 | 数据平台 | 数据质量评估平台 | 性能指标81分, 延迟25ms | 实验室研发 | 152 | 307"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号26",
+  "text": "26 | 芯创数据 | 成都 | 推理优化 | PagedAttention加速器 | 推理加速4倍, 显存利用率72% | 规模化部署 | 189 | 170"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号27",
+  "text": "27 | 盈融智能 | 武汉 | 数据平台 | 数据质量评估平台 | 性能指标81分, 延迟44ms | 实验室研发 | 908 | 339"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号28",
+  "text": "28 | 云通AI | 西安 | RAG | 知识库问答系统 | 性能指标88分, 延迟30ms | 小试 | 1425 | 284"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号29",
+  "text": "29 | 中融AI | 北京 | 边缘推理 | 嵌入式AI引擎 | 性能指标98分, 延迟11ms | 实验室研发 | 1151 | 185"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号30",
+  "text": "30 | 创信AI | 武汉 | RAG | 向量检索平台 | 性能指标85分, 延迟33ms | 规模化部署 | 1490 | 463"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号31",
+  "text": "31 | 中芯智能 | 厦门 | 知识图谱 | KG构建平台 | 性能指标84分, 延迟21ms | 实验室研发 | 1872 | 40"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号32",
+  "text": "32 | 智创实验室 | 郑州 | 模型压缩 | 剪枝优化器 | 压缩比60%, 精度保持84% | 规模化部署 | 1050 | 483"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号33",
+  "text": "33 | 联睿数据 | 哈尔滨 | 知识图谱 | KG构建平台 | 性能指标80分, 延迟26ms | 小试 | 1354 | 132"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号34",
+  "text": "34 | 盈联算力 | 哈尔滨 | AI芯片 | AI训练加速卡 | 能效比194TOPS/W, 制程7nm | 规模化部署 | 123 | 348"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号35",
+  "text": "35 | 云通数据 | 广州 | 推理优化 | vLLM推理平台 | 推理加速12倍, 显存利用率92% | 小试 | 1446 | 102"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号36",
+  "text": "36 | 联融创新 | 哈尔滨 | 数据平台 | 训练数据管理系统 | 性能指标87分, 延迟15ms | 小试 | 1855 | 141"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号37",
+  "text": "37 | 天算创新 | 哈尔滨 | 模型压缩 | 剪枝优化器 | 压缩比62%, 精度保持81% | 应用推广 | 1836 | 35"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号38",
+  "text": "38 | 星微AI | 长沙 | RAG | 向量检索平台 | 性能指标87分, 延迟19ms | 实验室研发 | 1401 | 26"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号39",
+  "text": "39 | 达芯科技 | 南京 | RAG | 混合检索框架 | 性能指标92分, 延迟48ms | 规模化部署 | 728 | 109"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号40",
+  "text": "40 | 芯科数据 | 无锡 | 知识图谱 | KG构建平台 | 性能指标83分, 延迟43ms | 应用推广 | 757 | 210"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号41",
+  "text": "41 | 创算实验室 | 杭州 | 多智能体协作 | 辩论式推理引擎 | 协作智能体数5个, 任务完成率73% | 实验室研发 | 1114 | 325"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号42",
+  "text": "42 | 华算智能 | 西安 | RAG | 文档解析工具 | 性能指标82分, 延迟47ms | 中试 | 1326 | 484"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号43",
+  "text": "43 | 创启实验室 | 重庆 | 知识图谱 | 知识图谱补全 | 性能指标90分, 延迟30ms | 中试 | 1185 | 31"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号44",
+  "text": "44 | 天启创新 | 成都 | 数据平台 | 数据质量评估平台 | 性能指标89分, 延迟30ms | 规模化部署 | 1757 | 23"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号45",
+  "text": "45 | 启通实验室 | 无锡 | 数据平台 | 数据清洗工具 | 性能指标94分, 延迟33ms | 应用推广 | 1433 | 292"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号46",
+  "text": "46 | 创芯科技 | 成都 | 多模态训练 | 跨模态对齐系统 | 语言75%, 视觉理解29%, 生成5% | 实验室研发 | 1726 | 170"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号47",
+  "text": "47 | 瑞启实验室 | 西安 | 智能体设计 | 智能体编排平台 | 性能指标81分, 延迟20ms | 应用推广 | 1301 | 87"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号48",
+  "text": "48 | 达创创新 | 无锡 | 模型压缩 | 混合压缩框架 | 压缩比47%, 精度保持90% | 实验室研发 | 1878 | 444"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号49",
+  "text": "49 | 华睿科技 | 哈尔滨 | 模型压缩 | 量化压缩平台 | 压缩比62%, 精度保持95% | 实验室研发 | 1191 | 484"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号50",
+  "text": "50 | 芯微数据 | 长沙 | AI芯片 | 边缘AI SoC | 能效比296TOPS/W, 制程5nm | 规模化部署 | 1719 | 308"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号51",
+  "text": "51 | 启信算力 | 长沙 | 智能体设计 | 护栏安全框架 | 性能指标94分, 延迟21ms | 小试 | 1770 | 442"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号52",
+  "text": "52 | 达信AI | 武汉 | 知识图谱 | 知识图谱补全 | 性能指标82分, 延迟50ms | 中试 | 530 | 213"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号53",
+  "text": "53 | 芯融数据 | 广州 | 智能体设计 | 提示链引擎 | 性能指标92分, 延迟49ms | 小试 | 1496 | 262"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号54",
+  "text": "54 | 达通数据 | 长沙 | 多智能体协作 | 多智能体协作框架 | 协作智能体数11个, 任务完成率72% | 规模化部署 | 1987 | 488"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号55",
+  "text": "55 | 芯信实验室 | 大连 | 边缘推理 | 边缘AI推理卡 | 性能指标91分, 延迟24ms | 应用推广 | 1797 | 477"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号56",
+  "text": "56 | 云智实验室 | 厦门 | 数据平台 | 训练数据管理系统 | 性能指标95分, 延迟19ms | 中试 | 942 | 249"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号57",
+  "text": "57 | 弘智AI | 大连 | 智能体设计 | 护栏安全框架 | 性能指标84分, 延迟44ms | 规模化部署 | 105 | 353"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号58",
+  "text": "58 | 云融创新 | 深圳 | 多智能体协作 | 任务分解引擎 | 协作智能体数3个, 任务完成率81% | 中试 | 826 | 282"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号59",
+  "text": "59 | 云算实验室 | 大连 | 知识图谱 | 知识图谱补全 | 性能指标88分, 延迟10ms | 应用推广 | 89 | 76"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号60",
+  "text": "60 | 瑞智AI | 深圳 | 推理优化 | KV Cache优化器 | 推理加速22倍, 显存利用率96% | 实验室研发 | 1322 | 13"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号61",
+  "text": "61 | 联创创新 | 无锡 | 模型压缩 | 混合压缩框架 | 压缩比64%, 精度保持93% | 小试 | 1290 | 432"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号62",
+  "text": "62 | 芯算科技 | 成都 | 知识图谱 | KG构建平台 | 性能指标98分, 延迟6ms | 中试 | 1229 | 242"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号63",
+  "text": "63 | 华通数据 | 深圳 | 数据平台 | 训练数据管理系统 | 性能指标83分, 延迟49ms | 中试 | 1791 | 462"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号64",
+  "text": "64 | 智微算力 | 上海 | RAG | 混合检索框架 | 性能指标93分, 延迟47ms | 中试 | 191 | 224"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号65",
+  "text": "65 | 创芯数据 | 天津 | 多模态训练 | MoE训练框架 | 语言75%, 视觉理解27%, 生成8% | 小试 | 941 | 38"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号66",
+  "text": "66 | 达创智能 | 厦门 | 边缘推理 | 边缘智能网关 | 性能指标93分, 延迟42ms | 中试 | 710 | 475"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号67",
+  "text": "67 | 中睿科技 | 长沙 | 模型压缩 | 混合压缩框架 | 压缩比61%, 精度保持94% | 中试 | 108 | 216"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号68",
+  "text": "68 | 华算实验室 | 青岛 | 知识图谱 | 关系提取引擎 | 性能指标88分, 延迟43ms | 中试 | 1188 | 17"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号69",
+  "text": "69 | 启达AI | 哈尔滨 | 边缘推理 | 嵌入式AI引擎 | 性能指标87分, 延迟49ms | 应用推广 | 1372 | 279"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号70",
+  "text": "70 | 联信智能 | 合肥 | 模型压缩 | 混合压缩框架 | 压缩比49%, 精度保持93% | 应用推广 | 1183 | 267"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号71",
+  "text": "71 | 华算数据 | 青岛 | 边缘推理 | 端侧推理框架 | 性能指标89分, 延迟21ms | 小试 | 297 | 211"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号72",
+  "text": "72 | 云联智能 | 成都 | 模型压缩 | 量化压缩平台 | 压缩比48%, 精度保持92% | 实验室研发 | 1755 | 19"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号73",
+  "text": "73 | 睿通算力 | 北京 | AI芯片 | 推理专用芯片 | 能效比153TOPS/W, 制程14nm | 中试 | 1478 | 376"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号74",
+  "text": "74 | 睿睿AI | 杭州 | 推理优化 | PagedAttention加速器 | 推理加速6倍, 显存利用率84% | 中试 | 427 | 179"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号75",
+  "text": "75 | 华算AI | 深圳 | 多智能体协作 | 交叉验证平台 | 协作智能体数15个, 任务完成率61% | 小试 | 355 | 205"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号76",
+  "text": "76 | 弘启智能 | 厦门 | 多智能体协作 | 辩论式推理引擎 | 协作智能体数3个, 任务完成率92% | 应用推广 | 1910 | 490"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号77",
+  "text": "77 | 华联科技 | 无锡 | 数据平台 | 数据标注平台 | 性能指标99分, 延迟11ms | 小试 | 1331 | 388"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号78",
+  "text": "78 | 星算智能 | 成都 | AI芯片 | AI训练加速卡 | 能效比176TOPS/W, 制程10nm | 规模化部署 | 1012 | 168"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号79",
+  "text": "79 | 创联智能 | 长沙 | 多模态训练 | 视觉理解模型 | 语言75%, 视觉理解29%, 生成8% | 小试 | 920 | 19"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号80",
+  "text": "80 | 星算算力 | 广州 | 多模态训练 | 多模态预训练平台 | 语言59%, 视觉理解34%, 生成19% | 中试 | 949 | 49"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号81",
+  "text": "81 | 弘芯AI | 南京 | AI芯片 | 边缘AI SoC | 能效比210TOPS/W, 制程7nm | 实验室研发 | 1871 | 215"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号82",
+  "text": "82 | 瑞信实验室 | 深圳 | 模型压缩 | 蒸馏推理引擎 | 压缩比40%, 精度保持92% | 规模化部署 | 132 | 139"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号83",
+  "text": "83 | 云融实验室 | 长沙 | 知识图谱 | 实体对齐工具 | 性能指标98分, 延迟32ms | 应用推广 | 236 | 259"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号84",
+  "text": "84 | 睿通数据 | 杭州 | 智能体设计 | 路由调度系统 | 性能指标93分, 延迟49ms | 应用推广 | 640 | 255"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号85",
+  "text": "85 | 睿信创新 | 上海 | 边缘推理 | 边缘AI推理卡 | 性能指标90分, 延迟21ms | 中试 | 287 | 256"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号86",
+  "text": "86 | 瑞通AI | 北京 | AI芯片 | 智能体执行芯片 | 能效比224TOPS/W, 制程7nm | 中试 | 1325 | 370"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号87",
+  "text": "87 | 智智数据 | 西安 | 知识图谱 | 多智能体KG增强 | 性能指标84分, 延迟23ms | 应用推广 | 1853 | 112"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号88",
+  "text": "88 | 瑞创实验室 | 武汉 | 智能体设计 | 路由调度系统 | 性能指标97分, 延迟5ms | 规模化部署 | 885 | 12"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号89",
+  "text": "89 | 天睿数据 | 广州 | 边缘推理 | 端侧推理框架 | 性能指标96分, 延迟50ms | 中试 | 900 | 291"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号90",
+  "text": "90 | 云通数据 | 广州 | 多智能体协作 | 任务分解引擎 | 协作智能体数3个, 任务完成率82% | 中试 | 1632 | 262"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号91",
+  "text": "91 | 瑞融智能 | 南京 | 推理优化 | vLLM推理平台 | 推理加速47倍, 显存利用率94% | 应用推广 | 1822 | 39"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号92",
+  "text": "92 | 启启AI | 厦门 | AI芯片 | 智能体执行芯片 | 能效比241TOPS/W, 制程3nm | 小试 | 1221 | 488"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号93",
+  "text": "93 | 盈科智能 | 苏州 | 边缘推理 | 边缘智能网关 | 性能指标92分, 延迟47ms | 小试 | 1064 | 114"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号94",
+  "text": "94 | 中创算力 | 杭州 | 边缘推理 | 边缘AI推理卡 | 性能指标96分, 延迟34ms | 实验室研发 | 1529 | 46"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号95",
+  "text": "95 | 睿信算力 | 南京 | RAG | 混合检索框架 | 性能指标92分, 延迟46ms | 实验室研发 | 1794 | 395"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号96",
+  "text": "96 | 天算AI | 苏州 | 边缘推理 | 嵌入式AI引擎 | 性能指标81分, 延迟44ms | 实验室研发 | 530 | 197"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号97",
+  "text": "97 | 云启科技 | 哈尔滨 | 多模态训练 | 多模态预训练平台 | 语言69%, 视觉理解20%, 生成3% | 中试 | 1680 | 27"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号98",
+  "text": "98 | 弘智科技 | 武汉 | AI芯片 | 智能体执行芯片 | 能效比223TOPS/W, 制程3nm | 小试 | 211 | 245"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号99",
+  "text": "99 | 达通算力 | 天津 | 数据平台 | 训练数据管理系统 | 性能指标87分, 延迟34ms | 中试 | 991 | 54"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号100",
+  "text": "100 | 星睿创新 | 合肥 | AI芯片 | 推理专用芯片 | 能效比172TOPS/W, 制程14nm | 中试 | 1358 | 403"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号101",
+  "text": "101 | 联芯AI | 合肥 | 模型压缩 | 混合压缩框架 | 压缩比43%, 精度保持91% | 应用推广 | 1221 | 201"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号102",
+  "text": "102 | 睿芯创新 | 大连 | 知识图谱 | KG构建平台 | 性能指标98分, 延迟48ms | 实验室研发 | 1914 | 304"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号103",
+  "text": "103 | 联通实验室 | 武汉 | 数据平台 | 数据清洗工具 | 性能指标87分, 延迟45ms | 小试 | 1321 | 436"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号104",
+  "text": "104 | 云算算力 | 广州 | 多模态训练 | 多模态预训练平台 | 语言72%, 视觉理解20%, 生成7% | 中试 | 1549 | 23"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号105",
+  "text": "105 | 中芯创新 | 成都 | 模型压缩 | 量化压缩平台 | 压缩比68%, 精度保持93% | 规模化部署 | 1077 | 475"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号106",
+  "text": "106 | 睿智实验室 | 天津 | 知识图谱 | 关系提取引擎 | 性能指标83分, 延迟34ms | 实验室研发 | 338 | 165"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号107",
+  "text": "107 | 创算实验室 | 大连 | AI芯片 | 多模态处理芯片 | 能效比175TOPS/W, 制程7nm | 中试 | 1148 | 28"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号108",
+  "text": "108 | 云科科技 | 南京 | 数据平台 | 合成数据生成器 | 性能指标91分, 延迟11ms | 小试 | 1015 | 40"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号109",
+  "text": "109 | 瑞创AI | 深圳 | 边缘推理 | 端侧推理框架 | 性能指标93分, 延迟12ms | 小试 | 142 | 205"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号110",
+  "text": "110 | 中启实验室 | 武汉 | AI芯片 | 推理专用芯片 | 能效比247TOPS/W, 制程7nm | 规模化部署 | 908 | 422"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号111",
+  "text": "111 | 瑞算创新 | 杭州 | 边缘推理 | 嵌入式AI引擎 | 性能指标93分, 延迟22ms | 实验室研发 | 1463 | 277"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号112",
+  "text": "112 | 睿微算力 | 青岛 | 多模态训练 | 跨模态对齐系统 | 语言75%, 视觉理解25%, 生成3% | 应用推广 | 615 | 12"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号113",
+  "text": "113 | 华微创新 | 深圳 | 模型压缩 | 蒸馏推理引擎 | 压缩比41%, 精度保持93% | 小试 | 307 | 155"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号114",
+  "text": "114 | 智芯创新 | 厦门 | 模型压缩 | 蒸馏推理引擎 | 压缩比67%, 精度保持83% | 中试 | 1635 | 43"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号115",
+  "text": "115 | 智融创新 | 广州 | 智能体设计 | 记忆管理系统 | 性能指标88分, 延迟16ms | 实验室研发 | 1403 | 117"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号116",
+  "text": "116 | 盈创实验室 | 武汉 | 数据平台 | 数据清洗工具 | 性能指标80分, 延迟16ms | 中试 | 157 | 31"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号117",
+  "text": "117 | 弘达实验室 | 深圳 | 边缘推理 | 边缘智能网关 | 性能指标91分, 延迟37ms | 规模化部署 | 273 | 163"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号118",
+  "text": "118 | 华睿实验室 | 重庆 | 知识图谱 | 知识图谱补全 | 性能指标80分, 延迟8ms | 应用推广 | 1785 | 401"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号119",
+  "text": "119 | 联融算力 | 长沙 | 多模态训练 | 多模态预训练平台 | 语言67%, 视觉理解21%, 生成4% | 中试 | 1328 | 330"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号120",
+  "text": "120 | 创智创新 | 郑州 | AI芯片 | 多模态处理芯片 | 能效比277TOPS/W, 制程5nm | 实验室研发 | 1674 | 486"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号121",
+  "text": "121 | 联创智能 | 厦门 | 模型压缩 | 混合压缩框架 | 压缩比47%, 精度保持94% | 中试 | 1744 | 262"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号122",
+  "text": "122 | 华启AI | 哈尔滨 | RAG | 向量检索平台 | 性能指标91分, 延迟14ms | 应用推广 | 187 | 10"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号123",
+  "text": "123 | 芯融创新 | 青岛 | 智能体设计 | 记忆管理系统 | 性能指标81分, 延迟42ms | 规模化部署 | 1200 | 112"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号124",
+  "text": "124 | 瑞算创新 | 哈尔滨 | 推理优化 | vLLM推理平台 | 推理加速32倍, 显存利用率90% | 规模化部署 | 1089 | 386"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号125",
+  "text": "125 | 睿信创新 | 杭州 | RAG | 混合检索框架 | 性能指标91分, 延迟12ms | 中试 | 1225 | 269"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号126",
+  "text": "126 | 启芯智能 | 郑州 | 数据平台 | 数据质量评估平台 | 性能指标80分, 延迟43ms | 中试 | 109 | 49"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号127",
+  "text": "127 | 智创实验室 | 青岛 | 推理优化 | 投机解码引擎 | 推理加速46倍, 显存利用率95% | 应用推广 | 192 | 45"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号128",
+  "text": "128 | 弘科AI | 重庆 | 模型压缩 | 混合压缩框架 | 压缩比50%, 精度保持90% | 中试 | 688 | 447"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号129",
+  "text": "129 | 瑞科算力 | 上海 | 智能体设计 | 提示链引擎 | 性能指标99分, 延迟8ms | 实验室研发 | 607 | 267"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号130",
+  "text": "130 | 创科算力 | 哈尔滨 | 知识图谱 | 实体对齐工具 | 性能指标96分, 延迟12ms | 中试 | 930 | 48"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号131",
+  "text": "131 | 天通科技 | 重庆 | 知识图谱 | KG构建平台 | 性能指标87分, 延迟30ms | 规模化部署 | 162 | 24"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号132",
+  "text": "132 | 芯信实验室 | 南京 | 知识图谱 | 关系提取引擎 | 性能指标83分, 延迟5ms | 应用推广 | 1579 | 116"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号133",
+  "text": "133 | 智睿AI | 武汉 | AI芯片 | 边缘AI SoC | 能效比245TOPS/W, 制程3nm | 应用推广 | 1814 | 273"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号134",
+  "text": "134 | 云联创新 | 苏州 | 数据平台 | 合成数据生成器 | 性能指标98分, 延迟30ms | 应用推广 | 642 | 6"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号135",
+  "text": "135 | 盈创算力 | 郑州 | 边缘推理 | 端侧推理框架 | 性能指标82分, 延迟32ms | 实验室研发 | 548 | 255"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号136",
+  "text": "136 | 盈算创新 | 合肥 | RAG | 知识库问答系统 | 性能指标90分, 延迟15ms | 实验室研发 | 1095 | 321"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号137",
+  "text": "137 | 中通创新 | 青岛 | RAG | 知识库问答系统 | 性能指标87分, 延迟11ms | 小试 | 574 | 43"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号138",
+  "text": "138 | 创智数据 | 深圳 | 智能体设计 | 护栏安全框架 | 性能指标94分, 延迟41ms | 规模化部署 | 969 | 339"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号139",
+  "text": "139 | 星科AI | 苏州 | RAG | 知识库问答系统 | 性能指标94分, 延迟9ms | 应用推广 | 955 | 457"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号140",
+  "text": "140 | 创微创新 | 青岛 | AI芯片 | AI训练加速卡 | 能效比257TOPS/W, 制程3nm | 实验室研发 | 805 | 89"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号141",
+  "text": "141 | 联达算力 | 深圳 | 数据平台 | 数据质量评估平台 | 性能指标96分, 延迟29ms | 应用推广 | 1238 | 455"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号142",
+  "text": "142 | 联创数据 | 无锡 | 模型压缩 | 剪枝优化器 | 压缩比56%, 精度保持90% | 实验室研发 | 972 | 26"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号143",
+  "text": "143 | 达芯算力 | 成都 | 推理优化 | 投机解码引擎 | 推理加速38倍, 显存利用率94% | 规模化部署 | 1298 | 28"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号144",
+  "text": "144 | 创启智能 | 哈尔滨 | RAG | 混合检索框架 | 性能指标81分, 延迟45ms | 中试 | 184 | 335"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号145",
+  "text": "145 | 星智实验室 | 南京 | 数据平台 | 训练数据管理系统 | 性能指标90分, 延迟10ms | 规模化部署 | 1409 | 27"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号146",
+  "text": "146 | 睿联实验室 | 大连 | 智能体设计 | 记忆管理系统 | 性能指标82分, 延迟24ms | 规模化部署 | 821 | 218"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号147",
+  "text": "147 | 瑞算科技 | 重庆 | 多模态训练 | MoE训练框架 | 语言65%, 视觉理解25%, 生成5% | 小试 | 1997 | 442"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号148",
+  "text": "148 | 达信AI | 广州 | 智能体设计 | 智能体编排平台 | 性能指标89分, 延迟11ms | 规模化部署 | 1628 | 428"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号149",
+  "text": "149 | 启科创新 | 苏州 | 数据平台 | 训练数据管理系统 | 性能指标99分, 延迟29ms | 小试 | 382 | 49"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号150",
+  "text": "150 | 联通算力 | 成都 | 边缘推理 | 边缘AI推理卡 | 性能指标93分, 延迟28ms | 小试 | 959 | 435"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号151",
+  "text": "151 | 瑞睿创新 | 武汉 | AI芯片 | 推理专用芯片 | 能效比300TOPS/W, 制程5nm | 小试 | 803 | 342"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号152",
+  "text": "152 | 创睿创新 | 合肥 | 多智能体协作 | 辩论式推理引擎 | 协作智能体数3个, 任务完成率86% | 规模化部署 | 333 | 76"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号153",
+  "text": "153 | 瑞信科技 | 青岛 | AI芯片 | AI训练加速卡 | 能效比266TOPS/W, 制程3nm | 中试 | 221 | 189"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号154",
+  "text": "154 | 芯创智能 | 哈尔滨 | 多模态训练 | 视觉理解模型 | 语言70%, 视觉理解20%, 生成6% | 实验室研发 | 861 | 170"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号155",
+  "text": "155 | 联微科技 | 武汉 | 推理优化 | vLLM推理平台 | 推理加速31倍, 显存利用率96% | 小试 | 331 | 35"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号156",
+  "text": "156 | 盈算数据 | 天津 | 边缘推理 | 嵌入式AI引擎 | 性能指标80分, 延迟10ms | 实验室研发 | 574 | 126"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号157",
+  "text": "157 | 启科算力 | 重庆 | 多智能体协作 | 多智能体协作框架 | 协作智能体数3个, 任务完成率89% | 实验室研发 | 147 | 377"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号158",
+  "text": "158 | 芯达数据 | 深圳 | 多模态训练 | MoE训练框架 | 语言65%, 视觉理解30%, 生成7% | 规模化部署 | 545 | 199"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号159",
+  "text": "159 | 盈信创新 | 青岛 | 模型压缩 | 蒸馏推理引擎 | 压缩比61%, 精度保持89% | 规模化部署 | 788 | 38"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号160",
+  "text": "160 | 云通AI | 重庆 | AI芯片 | AI训练加速卡 | 能效比260TOPS/W, 制程3nm | 应用推广 | 814 | 58"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号161",
+  "text": "161 | 睿智科技 | 青岛 | 模型压缩 | 知识蒸馏工具 | 压缩比63%, 精度保持93% | 小试 | 140 | 223"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号162",
+  "text": "162 | 启算AI | 长沙 | 边缘推理 | 低功耗推理芯片 | 性能指标84分, 延迟9ms | 应用推广 | 125 | 72"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号163",
+  "text": "163 | 天芯智能 | 苏州 | 知识图谱 | 多智能体KG增强 | 性能指标92分, 延迟39ms | 应用推广 | 568 | 46"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号164",
+  "text": "164 | 达启智能 | 上海 | RAG | 向量检索平台 | 性能指标83分, 延迟28ms | 应用推广 | 1871 | 275"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号165",
+  "text": "165 | 华启数据 | 成都 | 边缘推理 | 边缘智能网关 | 性能指标91分, 延迟38ms | 中试 | 1690 | 32"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号166",
+  "text": "166 | 芯联实验室 | 成都 | AI芯片 | 多模态处理芯片 | 能效比210TOPS/W, 制程5nm | 中试 | 677 | 417"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号167",
+  "text": "167 | 智创实验室 | 长沙 | RAG | 文档解析工具 | 性能指标81分, 延迟27ms | 规模化部署 | 940 | 455"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号168",
+  "text": "168 | 瑞达科技 | 大连 | RAG | 混合检索框架 | 性能指标85分, 延迟6ms | 小试 | 1788 | 450"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号169",
+  "text": "169 | 云睿创新 | 深圳 | 模型压缩 | 剪枝优化器 | 压缩比70%, 精度保持88% | 规模化部署 | 364 | 239"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号170",
+  "text": "170 | 华达实验室 | 深圳 | 数据平台 | 训练数据管理系统 | 性能指标96分, 延迟28ms | 应用推广 | 693 | 177"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号171",
+  "text": "171 | 瑞算数据 | 成都 | 边缘推理 | 嵌入式AI引擎 | 性能指标92分, 延迟40ms | 实验室研发 | 586 | 410"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号172",
+  "text": "172 | 瑞创创新 | 合肥 | 边缘推理 | 低功耗推理芯片 | 性能指标83分, 延迟13ms | 实验室研发 | 975 | 50"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号173",
+  "text": "173 | 联算实验室 | 苏州 | RAG | RAG检索引擎 | 性能指标97分, 延迟39ms | 中试 | 1875 | 130"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号174",
+  "text": "174 | 智融数据 | 成都 | RAG | 混合检索框架 | 性能指标87分, 延迟12ms | 小试 | 1672 | 36"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号175",
+  "text": "175 | 芯算实验室 | 无锡 | RAG | 文档解析工具 | 性能指标97分, 延迟13ms | 规模化部署 | 1860 | 24"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号176",
+  "text": "176 | 瑞智数据 | 天津 | AI芯片 | 智能体执行芯片 | 能效比273TOPS/W, 制程3nm | 小试 | 699 | 280"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号177",
+  "text": "177 | 智微AI | 青岛 | 智能体设计 | 记忆管理系统 | 性能指标98分, 延迟16ms | 小试 | 936 | 494"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号178",
+  "text": "178 | 盈芯创新 | 重庆 | 智能体设计 | 路由调度系统 | 性能指标85分, 延迟15ms | 中试 | 1964 | 227"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号179",
+  "text": "179 | 华信实验室 | 深圳 | 知识图谱 | 实体对齐工具 | 性能指标97分, 延迟22ms | 小试 | 1330 | 323"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号180",
+  "text": "180 | 睿科AI | 成都 | 数据平台 | 数据质量评估平台 | 性能指标84分, 延迟15ms | 规模化部署 | 1525 | 222"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号181",
+  "text": "181 | 创达算力 | 北京 | 多模态训练 | 多模态预训练平台 | 语言74%, 视觉理解24%, 生成8% | 小试 | 1620 | 366"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号182",
+  "text": "182 | 智联算力 | 厦门 | 知识图谱 | 关系提取引擎 | 性能指标95分, 延迟20ms | 应用推广 | 659 | 402"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号183",
+  "text": "183 | 云算创新 | 哈尔滨 | 边缘推理 | 边缘智能网关 | 性能指标86分, 延迟26ms | 规模化部署 | 344 | 417"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号184",
+  "text": "184 | 天联AI | 青岛 | 多智能体协作 | 任务分解引擎 | 协作智能体数2个, 任务完成率90% | 小试 | 1005 | 33"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号185",
+  "text": "185 | 云科实验室 | 上海 | 知识图谱 | 知识图谱补全 | 性能指标99分, 延迟31ms | 小试 | 1822 | 466"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号186",
+  "text": "186 | 华启数据 | 苏州 | 模型压缩 | 量化压缩平台 | 压缩比56%, 精度保持95% | 应用推广 | 1850 | 61"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号187",
+  "text": "187 | 创智算力 | 长沙 | 模型压缩 | 量化压缩平台 | 压缩比41%, 精度保持88% | 中试 | 1063 | 481"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号188",
+  "text": "188 | 云达算力 | 合肥 | AI芯片 | AI训练加速卡 | 能效比255TOPS/W, 制程3nm | 中试 | 1539 | 256"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号189",
+  "text": "189 | 瑞通数据 | 上海 | 数据平台 | 数据质量评估平台 | 性能指标86分, 延迟28ms | 规模化部署 | 641 | 37"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号190",
+  "text": "190 | 盈融创新 | 南京 | 数据平台 | 数据质量评估平台 | 性能指标83分, 延迟13ms | 实验室研发 | 856 | 223"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号191",
+  "text": "191 | 启睿数据 | 广州 | 模型压缩 | 蒸馏推理引擎 | 压缩比56%, 精度保持88% | 实验室研发 | 129 | 26"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号192",
+  "text": "192 | 芯科实验室 | 长沙 | 智能体设计 | 记忆管理系统 | 性能指标96分, 延迟13ms | 中试 | 1957 | 133"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号193",
+  "text": "193 | 瑞微AI | 合肥 | 数据平台 | 数据清洗工具 | 性能指标96分, 延迟37ms | 规模化部署 | 1053 | 203"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号194",
+  "text": "194 | 联智AI | 青岛 | RAG | RAG检索引擎 | 性能指标93分, 延迟42ms | 中试 | 1681 | 496"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号195",
+  "text": "195 | 中信实验室 | 郑州 | 边缘推理 | 端侧推理框架 | 性能指标98分, 延迟41ms | 小试 | 1527 | 35"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号196",
+  "text": "196 | 智睿智能 | 郑州 | 多智能体协作 | 任务分解引擎 | 协作智能体数3个, 任务完成率81% | 规模化部署 | 1991 | 147"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号197",
+  "text": "197 | 睿微实验室 | 哈尔滨 | 智能体设计 | 护栏安全框架 | 性能指标86分, 延迟31ms | 规模化部署 | 1637 | 291"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号198",
+  "text": "198 | 云联算力 | 上海 | 智能体设计 | 记忆管理系统 | 性能指标86分, 延迟40ms | 中试 | 1406 | 242"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号199",
+  "text": "199 | 星信智能 | 厦门 | RAG | 混合检索框架 | 性能指标91分, 延迟48ms | 中试 | 1299 | 176"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，序号200",
+  "text": "200 | 达通实验室 | 武汉 | 知识图谱 | 关系提取引擎 | 性能指标86分, 延迟49ms | 应用推广 | 699 | 336"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，第203行",
+  "text": "汇总 |  |  |  |  |  |  |  |"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，第204行",
+  "text": "总企业数 | 200 |  |  |  |  |  |  |"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，第205行",
+  "text": "平均研发投入(万元) | 1055 |  |  |  |  |  |  |"
+ },
+ {
+  "material": "调研数据表",
+  "locator": "调研数据表，第206行",
+  "text": "市场预期总额(亿元) | 44574 |  |  |  |  |  |  |"
+ }
+];
+
+</script>
+<script>
+/* ===== P2 综述终稿阅读器（仅作用于 sec-review 区块） ===== */
+(function () {
+  "use strict";
+
+  var navBox   = document.getElementById("chapter-nav");
+  var titleEl  = document.getElementById("chapter-title");
+  var counter  = document.getElementById("chapter-counter");
+  var bodyEl   = document.getElementById("chapter-body");
+  var overlay  = document.getElementById("source-overlay");
+  var panel    = document.getElementById("source-panel");
+  var srcHead  = document.getElementById("source-heading");
+  var srcBody  = document.getElementById("source-content");
+  var closeBtn = document.getElementById("source-close");
+  if (!navBox || !bodyEl) return;
+
+  /* ---------- 工具 ---------- */
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* ---------- 材料匹配：精确 → locator 包含 → 正文包含 ---------- */
+  /* 边界匹配：命中点相邻字符不得为字母/数字/CJK 文字，
+     避免「序号1」吞掉「序号10」「评论十」吞掉「评论十一」 */
+  function boundedContains(hay, needle) {
+    var i = hay.indexOf(needle);
+    while (i !== -1) {
+      var prev = i > 0 ? hay.charCodeAt(i - 1) : 0;
+      var nextIdx = i + needle.length;
+      var next = nextIdx < hay.length ? hay.charCodeAt(nextIdx) : 0;
+      var prevOk = !prev || (!/[0-9A-Za-z\u4e00-\u9fff]/.test(String.fromCharCode(prev)));
+      var nextOk = !next || (!/[0-9A-Za-z\u4e00-\u9fff]/.test(String.fromCharCode(next)));
+      if (prevOk && nextOk) return true;
+      i = hay.indexOf(needle, i + 1);
+    }
+    return false;
+  }
+
+  function findMaterial(material, locator) {
+    var pool = REVIEW_MATERIALS.filter(function (m) { return m.material === material; });
+    var hits = pool.filter(function (m) { return m.locator === locator; });
+    if (!hits.length) hits = pool.filter(function (m) { return boundedContains(m.locator, locator); });
+    if (!hits.length) hits = pool.filter(function (m) { return boundedContains(m.text, locator); });
+    return hits;
+  }
+
+  /* ---------- 章节导航 ---------- */
+  var navBtns = [];
+  REVIEW_CHAPTERS.forEach(function (ch, i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chapter-link group flex w-full items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-left transition-colors hover:bg-slate-800/60";
+    b.innerHTML =
+      '<span class="font-mono text-[11px] text-cyan-400/70 shrink-0">' + String(i + 1).padStart(2, "0") + '</span>' +
+      '<span class="truncate text-sm text-slate-400 group-hover:text-slate-100 transition-colors">' + esc(ch.chapter) + '</span>';
+    b.addEventListener("click", function () { selectChapter(i); });
+    navBox.appendChild(b);
+    navBtns.push(b);
+  });
+
+  /* ---------- 章节渲染 ---------- */
+  var CITE_RE = /【([^，】,]+)[，,]([^】]+)】/g;
+
+  function renderBody(text) {
+    bodyEl.textContent = "";
+    text.split(/\n\s*\n/).forEach(function (para) {
+      var p = document.createElement("p");
+      p.className = "mb-6 text-justify";
+      var last = 0, m;
+      CITE_RE.lastIndex = 0;
+      while ((m = CITE_RE.exec(para)) !== null) {
+        if (m.index > last) p.appendChild(document.createTextNode(para.slice(last, m.index)));
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cite rounded-sm px-0.5 transition-colors";
+        btn.textContent = m[0];
+        btn.dataset.material = m[1].trim();
+        btn.dataset.locator  = m[2].trim();
+        btn.title = "溯源：" + btn.dataset.material + " · " + btn.dataset.locator;
+        btn.addEventListener("click", function () { openSource(this.dataset.material, this.dataset.locator); });
+        p.appendChild(btn);
+        last = m.index + m[0].length;
+      }
+      if (last < para.length) p.appendChild(document.createTextNode(para.slice(last)));
+      bodyEl.appendChild(p);
+    });
+  }
+
+  function selectChapter(i) {
+    navBtns.forEach(function (b, j) {
+      var on = i === j;
+      b.classList.toggle("chapter-active", on);
+      b.querySelector("span:last-child").classList.toggle("text-slate-100", on);
+      b.querySelector("span:last-child").classList.toggle("text-slate-400", !on);
+    });
+    var ch = REVIEW_CHAPTERS[i];
+    titleEl.textContent = ch.chapter;
+    counter.textContent = "CHAPTER " + String(i + 1).padStart(2, "0") + " / " + String(REVIEW_CHAPTERS.length).padStart(2, "0");
+    renderBody(ch.body);
+  }
+
+  /* ---------- 溯源面板 ---------- */
+  function openSource(material, locator) {
+    srcBody.textContent = "";
+    var hits = findMaterial(material, locator);
+    srcHead.textContent = material + " · " + locator + (hits.length ? "（" + hits.length + " 个匹配片段）" : "");
+
+    if (!hits.length) {
+      var empty = document.createElement("p");
+      empty.className = "font-mono text-xs text-slate-500";
+      empty.textContent = "未在 materials 中找到对应片段。";
+      srcBody.appendChild(empty);
+    } else {
+      hits.forEach(function (h) {
+        var box = document.createElement("div");
+        box.className = hits.length > 1 ? "mb-6 border-b border-slate-800 pb-6 last:mb-0 last:border-0 last:pb-0" : "";
+        var loc = document.createElement("p");
+        loc.className = "mb-2 font-mono text-xs text-cyan-400/90";
+        loc.textContent = "出处：" + h.locator;
+        var pre = document.createElement("pre");
+        pre.className = "whitespace-pre-wrap break-words font-mono text-[13px] leading-6 text-slate-300";
+        pre.textContent = h.text;
+        box.appendChild(loc);
+        box.appendChild(pre);
+        srcBody.appendChild(box);
+      });
+    }
+    srcBody.scrollTop = 0;
+    overlay.classList.add("open");
+    panel.classList.add("open");
+    closeBtn.focus();
+  }
+
+  function closeSource() {
+    overlay.classList.remove("open");
+    panel.classList.remove("open");
+  }
+
+  overlay.addEventListener("click", closeSource);
+  closeBtn.addEventListener("click", closeSource);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSource(); });
+
+  /* ---------- 初始化 ---------- */
+  document.getElementById("review-doc-title").textContent = REVIEW_DOC_TITLE;
+  selectChapter(0);
+})();
+
+</script>
+<script>
+/* ===== P3 数据常量（D3b 八组冲突，数值与出处逐字保留） ===== */
+const AUDIT_METRICS = [
+ {
+  "label": "来源标注覆盖率",
+  "value": "94.2%",
+  "sub": "事实性陈述 103 条 · 已标注 97 条 · ≥90% 达标",
+  "report": "source"
+ },
+ {
+  "label": "数值校验需复核",
+  "value": "0 条",
+  "sub": "综述 418 个数值 · verify_numbers.py 零误报",
+  "report": "num"
+ },
+ {
+  "label": "无源结论",
+  "value": "0 条",
+  "sub": "独立审计 · 无来源 0 · 不支持 0"
+ },
+ {
+  "label": "数值冲突",
+  "value": "8 组",
+  "sub": "全部「并列 + 判断」· 三类诱导风险全部规避"
+ }
+];
+const AUDIT_CONFLICTS = [
+ {
+  "id": 1,
+  "name": "R1 强化学习训练成本",
+  "values": [
+   {
+    "label": "A",
+    "value": "29.4 万美元",
+    "qualifier": null,
+    "source": "论文摘要集，论文A；行业新闻集，新闻一"
+   },
+   {
+    "label": "B",
+    "value": "290 万美元",
+    "qualifier": null,
+    "source": "专家访谈记录，访谈一"
+   },
+   {
+    "label": "C",
+    "value": "6300 万美元",
+    "qualifier": "总投入",
+    "source": "专家访谈记录，访谈一；行业评论集，评论一"
+   }
+  ],
+  "resolution": "并列三值，按口径解释——29.4 万=最后强化学习阶段 GPU 租用；290 万=RL 完整投入；6300 万=含基础模型+数据清洗+标注+人力全口径",
+  "compliance": "合规（并列+判断）"
+ },
+ {
+  "id": 2,
+  "name": "DeepSeek-V3 训练成本",
+  "values": [
+   {
+    "label": "A",
+    "value": "约 600 万美元",
+    "qualifier": null,
+    "source": "论文摘要集，论文A；行业评论集，评论一"
+   },
+   {
+    "label": "B",
+    "value": "约 6000 万美元",
+    "qualifier": null,
+    "source": "专家访谈记录，访谈一"
+   }
+  ],
+  "resolution": "并列，提示两口径差异",
+  "compliance": "合规"
+ },
+ {
+  "id": 3,
+  "name": "企业级 AI 智能体市场（2026）",
+  "values": [
+   {
+    "label": "A",
+    "value": "449 亿元",
+    "qualifier": "IDC",
+    "source": "行业白皮书节选，表1；行业新闻集，新闻三"
+   },
+   {
+    "label": "B",
+    "value": "135.3 亿元",
+    "qualifier": "赛迪",
+    "source": "行业白皮书节选，第二章；行业新闻集，新闻三"
+   },
+   {
+    "label": "C",
+    "value": "约 220 亿元",
+    "qualifier": "陈教授测算",
+    "source": "专家访谈记录，访谈一"
+   },
+   {
+    "label": "D",
+    "value": "200—250 亿元",
+    "qualifier": "李峰",
+    "source": "行业评论集，评论二"
+   }
+  ],
+  "resolution": "并列四值，说明统计口径差异，明确\"不将 449 亿当既定事实\"",
+  "compliance": "合规"
+ },
+ {
+  "id": 4,
+  "name": "多模态最优训练配比",
+  "values": [
+   {
+    "label": "A",
+    "value": "语言 70% / 视觉理解 25% / 视觉生成 5%",
+    "qualifier": "130 亿参数",
+    "source": "论文摘要集，论文B；行业新闻集，新闻五"
+   },
+   {
+    "label": "B",
+    "value": "语言 55% / 视觉理解 30% / 视觉生成 15%",
+    "qualifier": "700 亿参数",
+    "source": "技术评测报告，表4；专家访谈记录，访谈二；行业评论集，评论三"
+   }
+  ],
+  "resolution": "并列，说明最优配比随模型规模变化",
+  "compliance": "合规"
+ },
+ {
+  "id": 5,
+  "name": "KV Cache 加速比",
+  "values": [
+   {
+    "label": "A",
+    "value": "约 140 倍",
+    "qualifier": null,
+    "source": "论文摘要集，论文C"
+   },
+   {
+    "label": "B",
+    "value": "实际 5—20 倍",
+    "qualifier": null,
+    "source": "技术评测报告，1.3"
+   },
+   {
+    "label": "C",
+    "value": "实际 5—10 倍",
+    "qualifier": null,
+    "source": "专家访谈记录，访谈一；行业评论集，评论五"
+   }
+  ],
+  "resolution": "并列，指出 140 倍是短序列理想值",
+  "compliance": "合规"
+ },
+ {
+  "id": 6,
+  "name": "vLLM 吞吐量提升",
+  "values": [
+   {
+    "label": "A",
+    "value": "2—4 倍",
+    "qualifier": null,
+    "source": "论文摘要集，论文C"
+   },
+   {
+    "label": "B",
+    "value": "实际 1.5—2 倍",
+    "qualifier": null,
+    "source": "技术评测报告，3.3；专家访谈记录，访谈一；行业评论集，评论五"
+   }
+  ],
+  "resolution": "并列，注明最佳并发 32 时约 2.02 倍",
+  "compliance": "合规"
+ },
+ {
+  "id": 7,
+  "name": "投机解码加速",
+  "values": [
+   {
+    "label": "A",
+    "value": "1.5—2.5 倍",
+    "qualifier": null,
+    "source": "论文摘要集，论文C"
+   },
+   {
+    "label": "B",
+    "value": "实际 1.3—1.5 倍",
+    "qualifier": null,
+    "source": "技术评测报告，6.1"
+   },
+   {
+    "label": "C",
+    "value": "30%—50%",
+    "qualifier": null,
+    "source": "专家访谈记录，访谈一；行业评论集，评论六"
+   }
+  ],
+  "resolution": "并列，注明复杂任务仅 1.31 倍",
+  "compliance": "合规"
+ },
+ {
+  "id": 8,
+  "name": "AI 核心产业规模",
+  "values": [
+   {
+    "label": "A",
+    "value": "1.2 万亿元",
+    "qualifier": null,
+    "source": "行业白皮书节选，第一章；行业新闻集，新闻六"
+   },
+   {
+    "label": "B",
+    "value": "约 8000—9000 亿元",
+    "qualifier": null,
+    "source": "专家访谈记录，访谈二；行业评论集，评论七"
+   }
+  ],
+  "resolution": "并列，说明\"传统信息化 vs 大模型直接相关\"口径差异",
+  "compliance": "合规"
+ }
+];
+
+</script>
+<script>
+/* ===== P3 审计报告模块（仅作用于 sec-audit 区块） ===== */
+(function () {
+  "use strict";
+
+  var metricBox = document.getElementById("audit-metrics");
+  var listBox   = document.getElementById("audit-conflicts");
+  if (!metricBox || !listBox) return;
+
+  var CHECK_SVG = '<svg class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg>';
+
+  /* 证据要点：照录 D4 两份校验报告原文，数值未作改写（待确认数以文件 24 为准） */
+  var AUDIT_REPORTS = {
+    source: {
+      title: "来源检查报告",
+      file: "D4_来源检查报告.txt",
+      rows: [
+        ["疑似事实性陈述", "124 条"],
+        ["分析性归纳（不强制标注）", "21 条"],
+        ["事实性陈述（须标注）", "103 条"],
+        ["含来源标注", "97 条"],
+        ["标注覆盖率", "94.2%"]
+      ]
+    },
+    num: {
+      title: "数值校验报告",
+      file: "D4_数值校验报告.txt",
+      rows: [
+        ["综述中出现数值总数", "418"],
+        ["需复核条目（疑似无源）", "0"],
+        ["待确认条目（有源，单位/转述差异）", "24"]
+      ]
+    }
+  };
+
+  /* ---------- 顶部四指标大卡 ---------- */
+  AUDIT_METRICS.forEach(function (m, i) {
+    var card = document.createElement("div");
+    card.className = "rounded-lg border border-slate-700/70 bg-slate-800/50 p-5 transition-colors hover:border-cyan-400/40";
+    var label = document.createElement("p");
+    label.className = "font-mono text-[11px] tracking-[0.2em] text-slate-500";
+    label.textContent = "METRIC " + String(i + 1).padStart(2, "0") + " · " + m.label;
+    var val = document.createElement("p");
+    val.className = "mt-3 text-3xl font-bold tracking-tight " + (i === 0 || i === 3 ? "text-cyan-400" : "text-slate-100");
+    val.textContent = m.value;
+    var sub = document.createElement("p");
+    sub.className = "mt-2 text-xs leading-relaxed text-slate-500";
+    sub.textContent = m.sub;
+    card.appendChild(label); card.appendChild(val); card.appendChild(sub);
+
+    /* 证据展开按钮 + 报告要点面板（仅挂载到有 report 字段的卡片） */
+    if (m.report && AUDIT_REPORTS[m.report]) {
+      var rep = AUDIT_REPORTS[m.report];
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("aria-expanded", "false");
+      btn.className = "mt-4 inline-flex w-full items-center justify-between rounded border border-slate-700/80 bg-slate-900/60 px-3 py-1.5 font-mono text-[11px] tracking-wider text-cyan-400/90 transition-colors hover:border-cyan-400/40 hover:text-cyan-400";
+      btn.innerHTML = '<span>查看' + rep.title + '</span><svg class="audit-chevron h-3 w-3 shrink-0 transition-transform duration-200" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3l5 5-5 5"/></svg>';
+
+      var panel = document.createElement("div");
+      panel.className = "report-panel mt-3 hidden rounded border border-slate-800 bg-slate-900/50 p-3";
+      rep.rows.forEach(function (r) {
+        var row = document.createElement("div");
+        row.className = "flex items-baseline justify-between gap-3 border-b border-slate-800/70 py-1.5 last:border-b-0";
+        var k = document.createElement("span");
+        k.className = "text-xs leading-relaxed text-slate-500";
+        k.textContent = r[0];
+        var v = document.createElement("span");
+        v.className = "shrink-0 font-mono text-xs text-slate-100";
+        v.textContent = r[1];
+        row.appendChild(k); row.appendChild(v);
+        panel.appendChild(row);
+      });
+      var srcNote = document.createElement("p");
+      srcNote.className = "mt-2 font-mono text-[10px] tracking-wider text-slate-600";
+      srcNote.textContent = "来源文件：" + rep.file + " · 要点照录原文";
+      panel.appendChild(srcNote);
+
+      btn.addEventListener("click", function () {
+        var open = panel.classList.toggle("hidden") === false;
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        btn.querySelector(".audit-chevron").style.transform = open ? "rotate(90deg)" : "";
+      });
+
+      card.appendChild(btn); card.appendChild(panel);
+    }
+    metricBox.appendChild(card);
+  });
+
+  /* ---------- 8 组数值冲突卡片 ---------- */
+  AUDIT_CONFLICTS.forEach(function (c) {
+    var card = document.createElement("article");
+    card.className = "flex flex-col overflow-hidden rounded-lg border border-slate-700/70 bg-slate-800/40";
+
+    /* 头部：编号 + 名称 + 合规徽标 */
+    var head = document.createElement("header");
+    head.className = "flex items-center gap-3 border-b border-slate-800 px-5 py-3.5";
+    var no = document.createElement("span");
+    no.className = "shrink-0 font-mono text-[11px] tracking-widest text-cyan-400/80";
+    no.textContent = "冲突 " + String(c.id).padStart(2, "0");
+    var h3 = document.createElement("h3");
+    h3.className = "min-w-0 flex-1 truncate text-[15px] font-semibold text-slate-100";
+    h3.textContent = c.name;
+    head.appendChild(no); head.appendChild(h3);
+
+    /* 数值列表 */
+    var ul = document.createElement("ul");
+    ul.className = "flex-1 space-y-3 px-5 py-4";
+    c.values.forEach(function (v) {
+      var li = document.createElement("li");
+      li.className = "flex gap-3";
+      var chip = document.createElement("span");
+      chip.className = "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-600 font-mono text-[11px] text-slate-400";
+      chip.textContent = v.label;
+      var body = document.createElement("div");
+      body.className = "min-w-0";
+      var vp = document.createElement("p");
+      vp.className = "text-sm leading-6 text-slate-200";
+      vp.textContent = v.value;
+      if (v.qualifier) {
+        var q = document.createElement("span");
+        q.className = "ml-2 font-mono text-xs text-cyan-400/80";
+        q.textContent = "（" + v.qualifier + "）";
+        vp.appendChild(q);
+      }
+      var sp = document.createElement("p");
+      sp.className = "mt-0.5 font-mono text-xs leading-5 text-slate-500";
+      sp.textContent = "出处：" + v.source;
+      body.appendChild(vp); body.appendChild(sp);
+      li.appendChild(chip); li.appendChild(body);
+      ul.appendChild(li);
+    });
+
+    /* 底部：处理方式 + 是否合规 */
+    var foot = document.createElement("footer");
+    foot.className = "border-t border-slate-800 px-5 py-4";
+    var rl = document.createElement("p");
+    rl.className = "font-mono text-[11px] tracking-[0.2em] text-slate-500";
+    rl.textContent = "处理方式";
+    var rt = document.createElement("p");
+    rt.className = "mt-1.5 text-sm leading-6 text-slate-300";
+    rt.textContent = c.resolution;
+    var comp = document.createElement("p");
+    comp.className = "mt-3 flex items-center gap-1.5 font-mono text-xs text-emerald-300";
+    comp.innerHTML = CHECK_SVG + "<span>是否合规：" + c.compliance.replace(/</g, "&lt;") + "</span>";
+    foot.appendChild(rl); foot.appendChild(rt); foot.appendChild(comp);
+
+    card.appendChild(head); card.appendChild(ul); foot && card.appendChild(foot);
+    listBox.appendChild(card);
+  });
+})();
+
+</script>
+<script>
+/* ===== P4 材料分组模块（仅作用于 sec-materials 区块，数据复用 REVIEW_MATERIALS） ===== */
+(function () {
+  "use strict";
+
+  var statsBox  = document.getElementById("materials-stats");
+  var groupBox  = document.getElementById("materials-groups");
+  if (!statsBox || !groupBox || typeof REVIEW_MATERIALS === "undefined") return;
+
+  /* 指定展示顺序 */
+  var ORDER = ["行业白皮书节选", "论文摘要集", "行业新闻集", "专家访谈记录", "行业评论集", "技术评测报告", "调研数据表"];
+
+  var groups = ORDER.map(function (name) {
+    return { name: name, items: REVIEW_MATERIALS.filter(function (m) { return m.material === name; }) };
+  });
+
+  /* ---------- 顶部统计 ---------- */
+  var stats = [
+    { value: String(groups.length), unit: "份材料", sub: "7 类来源 · 全部嵌入页面", accent: true },
+    { value: String(REVIEW_MATERIALS.length), unit: "个片段", sub: "已清洗 · 无 PDF 水印", accent: true },
+    { value: "140", unit: "处正文标注", sub: "综述事实句引用总数", accent: false },
+    { value: "55", unit: "种引用定位", sub: "三级匹配 · 全部唯一命中", accent: false }
+  ];
+  stats.forEach(function (s, i) {
+    var card = document.createElement("div");
+    card.className = "rounded-lg border border-slate-700/70 bg-slate-800/50 p-5 transition-colors hover:border-cyan-400/40";
+    var label = document.createElement("p");
+    label.className = "font-mono text-[11px] tracking-[0.2em] text-slate-500";
+    label.textContent = "STAT " + String(i + 1).padStart(2, "0") + " · " + s.unit;
+    var val = document.createElement("p");
+    val.className = "mt-3 text-3xl font-bold tracking-tight " + (s.accent ? "text-cyan-400" : "text-slate-100");
+    val.textContent = s.value;
+    var sub = document.createElement("p");
+    sub.className = "mt-2 text-xs leading-relaxed text-slate-500";
+    sub.textContent = s.sub;
+    card.appendChild(label); card.appendChild(val); card.appendChild(sub);
+    statsBox.appendChild(card);
+  });
+
+  /* ---------- 分组卡片 ---------- */
+  var CHEVRON = '<svg class="material-chevron h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3l5 5-5 5"/></svg>';
+
+  function excerpt(text) {
+    var flat = text.replace(/\s+/g, " ").trim();
+    return flat.length > 80 ? flat.slice(0, 80) + "…" : flat;
+  }
+
+  groups.forEach(function (g, gi) {
+    var card = document.createElement("div");
+    card.className = "material-card overflow-hidden rounded-lg border border-slate-700/70 bg-slate-800/40";
+
+    /* 头部按钮 */
+    var head = document.createElement("button");
+    head.type = "button";
+    head.setAttribute("aria-expanded", gi === 0 ? "true" : "false");
+    head.className = "flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-slate-800/60";
+    var no = document.createElement("span");
+    no.className = "shrink-0 font-mono text-[11px] tracking-widest text-cyan-400/80";
+    no.textContent = String(gi + 1).padStart(2, "0");
+    var name = document.createElement("span");
+    name.className = "min-w-0 flex-1 truncate text-[15px] font-semibold text-slate-100";
+    name.textContent = g.name;
+    var count = document.createElement("span");
+    count.className = "shrink-0 font-mono text-xs text-slate-500";
+    count.textContent = g.items.length + " 个片段";
+    head.appendChild(no); head.appendChild(name); head.appendChild(count);
+    head.insertAdjacentHTML("beforeend", CHEVRON);
+
+    /* 片段列表 */
+    var body = document.createElement("div");
+    body.className = "material-body border-t border-slate-800 " + (gi === 0 ? "" : "hidden");
+    var list = document.createElement("ul");
+    list.className = "max-h-96 space-y-3 overflow-y-auto px-5 py-4";
+    g.items.forEach(function (m) {
+      var li = document.createElement("li");
+      li.className = "min-w-0";
+      var loc = document.createElement("p");
+      loc.className = "truncate font-mono text-xs text-cyan-400/80";
+      loc.textContent = m.locator;
+      var exc = document.createElement("p");
+      exc.className = "mt-0.5 truncate text-xs leading-relaxed text-slate-500";
+      exc.textContent = excerpt(m.text);
+      li.appendChild(loc); li.appendChild(exc);
+      list.appendChild(li);
+    });
+    body.appendChild(list);
+    card.appendChild(head); card.appendChild(body);
+    groupBox.appendChild(card);
+
+    head.addEventListener("click", function () {
+      var willOpen = body.classList.contains("hidden");
+      /* 手风琴：先收起全部卡片，再按需展开当前卡 */
+      groupBox.querySelectorAll(".material-body").forEach(function (b) { b.classList.add("hidden"); });
+      groupBox.querySelectorAll(".material-card > button").forEach(function (btn) {
+        btn.setAttribute("aria-expanded", "false");
+        var chev = btn.querySelector(".material-chevron");
+        if (chev) chev.style.transform = "";
+      });
+      if (willOpen) {
+        body.classList.remove("hidden");
+        head.setAttribute("aria-expanded", "true");
+        head.querySelector(".material-chevron").style.transform = "rotate(90deg)";
+      }
+    });
+  });
+
+  /* 默认展开第一组 */
+  var firstHead = groupBox.querySelector(".material-card button");
+  if (firstHead) firstHead.querySelector(".material-chevron").style.transform = "rotate(90deg)";
+})();
+</script>
+
+<!-- ══════════ P4 数据可视化（sec-data） ══════════ -->
+<script>
+(function () {
+  "use strict";
+  var boxBar = document.getElementById("chart-direction");
+  var boxPie = document.getElementById("chart-stage");
+  if (!boxBar || !boxPie) return;
+
+  /* 数据照录 D5_调研统计.md，数值未作改动 */
+  var BAR_DATA = [
+    { name: "模型压缩", value: 26 },
+    { name: "AI 芯片", value: 24 },
+    { name: "知识图谱", value: 24 },
+    { name: "数据平台", value: 23 },
+    { name: "边缘推理", value: 23 },
+    { name: "RAG", value: 22 },
+    { name: "智能体设计", value: 21 },
+    { name: "多智能体协作", value: 13 },
+    { name: "多模态训练", value: 13 },
+    { name: "推理优化", value: 11 }
+  ];
+  var PIE_DATA = [
+    { name: "中试", value: 48 },
+    { name: "规模化部署", value: 42 },
+    { name: "小试", value: 41 },
+    { name: "实验室研发", value: 36 },
+    { name: "应用推广", value: 33 }
+  ];
+
+  window.__secData = { bar: BAR_DATA, pie: PIE_DATA };
+
+  var FONT = '-apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif';
+  var TIP = {
+    backgroundColor: "#1e293b",
+    borderColor: "#334155",
+    borderWidth: 1,
+    padding: [8, 12],
+    textStyle: { color: "#e2e8f0", fontSize: 12, fontFamily: FONT }
+  };
+  var charts = [];
+
+  function render() {
+    if (typeof echarts === "undefined") return;
+
+    /* 柱状图：技术方向分布（降序，横向条形） */
+    var bar = echarts.init(boxBar);
+    bar.setOption({
+      textStyle: { fontFamily: FONT },
+      grid: { left: 8, right: 44, top: 8, bottom: 8, containLabel: true },
+      tooltip: Object.assign({ trigger: "axis", axisPointer: { type: "shadow" }, valueFormatter: function (v) { return v + " 家"; } }, TIP),
+      xAxis: {
+        type: "value",
+        axisLabel: { color: "#94a3b8", fontSize: 11 },
+        splitLine: { lineStyle: { color: "rgba(51,65,80,0.4)" } }
+      },
+      yAxis: {
+        type: "category",
+        inverse: true,
+        data: BAR_DATA.map(function (d) { return d.name; }),
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: "#cbd5e1", fontSize: 12 }
+      },
+      series: [{
+        type: "bar",
+        data: BAR_DATA.map(function (d) { return d.value; }),
+        barWidth: 14,
+        showBackground: true,
+        backgroundStyle: { color: "rgba(148,163,184,0.08)", borderRadius: 3 },
+        itemStyle: {
+          borderRadius: 3,
+          color: {
+            type: "linear", x: 0, y: 0, x2: 1, y2: 0,
+            colorStops: [
+              { offset: 0, color: "#0e7490" },
+              { offset: 1, color: "#22d3ee" }
+            ]
+          }
+        },
+        label: { show: true, position: "right", color: "#67e8f9", fontSize: 11, fontFamily: "ui-monospace, monospace" }
+      }]
+    });
+    charts.push(bar);
+
+    /* 饼图：产业化阶段分布 */
+    var pie = echarts.init(boxPie);
+    pie.setOption({
+      textStyle: { fontFamily: FONT },
+      color: ["#67e8f9", "#22d3ee", "#06b6d4", "#0e7490", "#164e63"],
+      tooltip: Object.assign({ trigger: "item", formatter: "{b}：{c} 家（{d}%）" }, TIP),
+      legend: {
+        bottom: 0,
+        icon: "circle",
+        itemWidth: 8,
+        itemHeight: 8,
+        itemGap: 16,
+        textStyle: { color: "#94a3b8", fontSize: 12 }
+      },
+      series: [{
+        type: "pie",
+        radius: ["40%", "62%"],
+        center: ["50%", "45%"],
+        padAngle: 2,
+        itemStyle: { borderRadius: 4, borderColor: "#0f172a", borderWidth: 2 },
+        label: { color: "#cbd5e1", fontSize: 11, alignTo: "edge", edgeDistance: 8, formatter: "{b} {c} · {d}%" },
+        labelLine: { length: 12, length2: 8, lineStyle: { color: "#475569" } },
+        emphasis: { scale: true, scaleSize: 4, label: { color: "#f1f5f9" } },
+        data: PIE_DATA
+      }]
+    });
+    charts.push(pie);
+
+    /* 随窗口宽度自适应 */
+    var rt;
+    window.addEventListener("resize", function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () { charts.forEach(function (c) { c.resize(); }); }, 120);
+    });
+  }
+
+  /* 动态加载 ECharts，失败时给出提示 */
+  var s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js";
+  s.onload = render;
+  s.onerror = function () {
+    [boxBar, boxPie].forEach(function (box) {
+      box.className += " flex items-center justify-center";
+      box.innerHTML = '<p class="font-mono text-xs tracking-widest text-slate-600">ECharts 加载失败，请检查网络</p>';
+    });
+  };
+  document.head.appendChild(s);
+})();
+</script>
+</script>
+</body>
+</html>
